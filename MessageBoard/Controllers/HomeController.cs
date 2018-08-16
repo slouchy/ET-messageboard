@@ -11,16 +11,10 @@ namespace MessageBoard.Controllers
 {
     public class HomeController : Controller
     {
-        DBTool dBTool = new DBTool();
-        string userConnection = ConfigurationManager.ConnectionStrings["UserConnection"].ConnectionString;
-        // GET: Home
-        public ActionResult Login()
+        [HttpGet]
+        public ActionResult Index()
         {
-            return View();
-        }
-
-        public ActionResult Index() {
-            return View();
+            return RedirectToAction("Index", "Login");
         }
     }
 }
