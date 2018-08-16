@@ -10,7 +10,9 @@
 let vueApp = new Vue({
     el: "#main",
     data: {
-        isEnabledSubmit: false
+        isEnabledSubmit: true,
+        isPWOK: false,
+        isUserOK: false
     },
     methods: {
         CheckUserName(evt) {
@@ -18,10 +20,13 @@ let vueApp = new Vue({
             let maxLength = 20;
             let errorMsg = "";
 
+            this.isUserOK = false;
             if ($this.val().length > maxLength) {
                 errorMsg = `輸入長度超過 ${maxLength} 字`;
             } else if ($this.val().length === 0) {
                 errorMsg = `請輸入使用者名稱`;
+            } else {
+                this.isUserOK = true;
             }
 
             this.SetPopover($this, errorMsg !== "", errorMsg);
@@ -31,13 +36,31 @@ let vueApp = new Vue({
             let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}/;
             let errorMsg = "";
 
-            errorMsg = !regPW.test($this.val()) ? "密碼檢驗失敗" : "";
+            this.isPWOK = true;
+            if (!regPW.test($this.val())) {
+                errorMsg = "密碼檢驗失敗";
+                this.isPWOK = false;
+            }
+
             this.SetPopover($this, errorMsg !== "", errorMsg);
         },
         SetPopover($this, isShowMsg, errorMsg) {
             $this.attr("data-content", errorMsg);
             $this.popover(isShowMsg ? "show" : "hide");
-            this.isEnabledSubmit = !isShowMsg;
+            this.isEnabledSubmit = false;
+            if (this.isPWOK && this.isUserOK) {
+                this.isEnabledSubmit = true;
+            }
+        },
+        UserLogin(evt) {
+            $(".user-info").each(function () {
+                $(this).focus();
+            });
+
+            $(evt.target).focus();
+            if (!(this.isUserOK && this.isPWOK)) {
+                evt.preventDefault();
+            }
         }
     }
 });
