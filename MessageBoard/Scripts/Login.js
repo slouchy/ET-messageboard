@@ -10,8 +10,7 @@
 let vueApp = new Vue({
     el: "#main",
     data: {
-        isEnabledSubmit: false,
-        enableCount: 0
+        isEnabledSubmit: false
     },
     methods: {
         CheckUserName(evt) {
@@ -25,27 +24,20 @@ let vueApp = new Vue({
                 errorMsg = `請輸入使用者名稱`;
             }
 
-            if (errorMsg !== "") {
-                $this.attr("data-content", errorMsg);
-                $this.popover("show");
-                this.isEnabledSubmit = false;
-            } else {
-                $this.popover("hide");
-                this.isEnabledSubmit = true;
-            }
+            this.SetPopover($this, errorMsg !== "", errorMsg);
         },
         CheckUserPw(evt) {
             let $this = $(evt.target);
             let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}/;
+            let errorMsg = "";
 
-            if (!regPW.test($this.val())) {
-                $this.attr("data-content", "密碼檢驗失敗");
-                $this.popover("show");
-                this.isEnabledSubmit = false;
-            } else {
-                $this.popover("hide");
-                this.isEnabledSubmit = true;
-            }
+            errorMsg = !regPW.test($this.val()) ? "密碼檢驗失敗" : "";
+            this.SetPopover($this, errorMsg !== "", errorMsg);
+        },
+        SetPopover($this, isShowMsg, errorMsg) {
+            $this.attr("data-content", errorMsg);
+            $this.popover(isShowMsg ? "show" : "hide");
+            this.isEnabledSubmit = !isShowMsg;
         }
     }
 });
