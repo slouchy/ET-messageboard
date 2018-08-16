@@ -1,0 +1,503 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="MessageBoardModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="MajorMessageList">
+          <Key>
+            <PropertyRef Name="MajorID" />
+          </Key>
+          <Property Name="MajorID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MessageStatus" Type="bit" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+          <Property Name="CreateUserID" Type="int" />
+        </EntityType>
+        <EntityType Name="Message">
+          <Key>
+            <PropertyRef Name="MessageID" />
+          </Key>
+          <Property Name="MessageID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MajorID" Type="int" Nullable="false" />
+          <Property Name="MessageCount" Type="int" Nullable="false" />
+          <Property Name="Message" Type="nvarchar" MaxLength="310" Nullable="false" />
+          <Property Name="MessageStatus" Type="bit" Nullable="false" />
+          <Property Name="IP" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+          <Property Name="CreateUserID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="MessagePic">
+          <Key>
+            <PropertyRef Name="PicID" />
+          </Key>
+          <Property Name="PicID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MessageID" Type="int" Nullable="false" />
+          <Property Name="PicURL" Type="int" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+          <Property Name="CreateUserID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="OperateLog">
+          <Key>
+            <PropertyRef Name="OperateID" />
+          </Key>
+          <Property Name="OperateID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserID" Type="int" Nullable="false" />
+          <Property Name="OperateTable" Type="nvarchar" MaxLength="30" Nullable="false" />
+          <Property Name="TargetID" Type="int" Nullable="false" />
+          <Property Name="OperateJSON" Type="nvarchar" MaxLength="1000" Nullable="false" />
+          <Property Name="IP" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="UserList">
+          <Key>
+            <PropertyRef Name="UserID" />
+          </Key>
+          <Property Name="UserID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="UserPW" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="UserEmail" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="UserAccess" Type="int" Nullable="false" />
+          <Property Name="UserStatus" Type="bit" Nullable="false" />
+          <Property Name="CreateIP" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="UserLog">
+          <Key>
+            <PropertyRef Name="UserLogID" />
+          </Key>
+          <Property Name="UserLogID" Type="int" Nullable="false" />
+          <Property Name="UserID" Type="int" Nullable="false" />
+          <Property Name="UserOperator" Type="nvarchar" MaxLength="5" Nullable="false" />
+          <Property Name="IP" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_MajorMessageList_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="0..1" />
+          <End Role="MajorMessageList" Type="Self.MajorMessageList" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="MajorMessageList">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Message_MajorMessageList">
+          <End Role="MajorMessageList" Type="Self.MajorMessageList" Multiplicity="1" />
+          <End Role="Message" Type="Self.Message" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="MajorMessageList">
+              <PropertyRef Name="MajorID" />
+            </Principal>
+            <Dependent Role="Message">
+              <PropertyRef Name="MajorID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Message_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="Message" Type="Self.Message" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="Message">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_MessagePic_Message">
+          <End Role="Message" Type="Self.Message" Multiplicity="1" />
+          <End Role="MessagePic" Type="Self.MessagePic" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Message">
+              <PropertyRef Name="MessageID" />
+            </Principal>
+            <Dependent Role="MessagePic">
+              <PropertyRef Name="MessageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_MessagePic_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="MessagePic" Type="Self.MessagePic" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="MessagePic">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_OperateLog_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="OperateLog" Type="Self.OperateLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="OperateLog">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserLog_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="UserLog" Type="Self.UserLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="UserLog">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="MessageBoardModelStoreContainer">
+          <EntitySet Name="MajorMessageList" EntityType="Self.MajorMessageList" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Message" EntityType="Self.Message" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="MessagePic" EntityType="Self.MessagePic" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="OperateLog" EntityType="Self.OperateLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserList" EntityType="Self.UserList" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserLog" EntityType="Self.UserLog" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_MajorMessageList_UserList" Association="Self.FK_MajorMessageList_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="MajorMessageList" EntitySet="MajorMessageList" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Message_MajorMessageList" Association="Self.FK_Message_MajorMessageList">
+            <End Role="MajorMessageList" EntitySet="MajorMessageList" />
+            <End Role="Message" EntitySet="Message" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Message_UserList" Association="Self.FK_Message_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="Message" EntitySet="Message" />
+          </AssociationSet>
+          <AssociationSet Name="FK_MessagePic_Message" Association="Self.FK_MessagePic_Message">
+            <End Role="Message" EntitySet="Message" />
+            <End Role="MessagePic" EntitySet="MessagePic" />
+          </AssociationSet>
+          <AssociationSet Name="FK_MessagePic_UserList" Association="Self.FK_MessagePic_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="MessagePic" EntitySet="MessagePic" />
+          </AssociationSet>
+          <AssociationSet Name="FK_OperateLog_UserList" Association="Self.FK_OperateLog_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="OperateLog" EntitySet="OperateLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserLog_UserList" Association="Self.FK_UserLog_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="UserLog" EntitySet="UserLog" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="MessageBoardModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="MajorMessageList">
+          <Key>
+            <PropertyRef Name="MajorID" />
+          </Key>
+          <Property Name="MajorID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MessageStatus" Type="Boolean" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="CreateUserID" Type="Int32" />
+          <NavigationProperty Name="UserList" Relationship="Self.FK_MajorMessageList_UserList" FromRole="MajorMessageList" ToRole="UserList" />
+          <NavigationProperty Name="Message" Relationship="Self.FK_Message_MajorMessageList" FromRole="MajorMessageList" ToRole="Message" />
+        </EntityType>
+        <EntityType Name="Message">
+          <Key>
+            <PropertyRef Name="MessageID" />
+          </Key>
+          <Property Name="MessageID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MajorID" Type="Int32" Nullable="false" />
+          <Property Name="MessageCount" Type="Int32" Nullable="false" />
+          <Property Name="Message1" Type="String" MaxLength="310" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="MessageStatus" Type="Boolean" Nullable="false" />
+          <Property Name="IP" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="CreateUserID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="MajorMessageList" Relationship="Self.FK_Message_MajorMessageList" FromRole="Message" ToRole="MajorMessageList" />
+          <NavigationProperty Name="UserList" Relationship="Self.FK_Message_UserList" FromRole="Message" ToRole="UserList" />
+          <NavigationProperty Name="MessagePic" Relationship="Self.FK_MessagePic_Message" FromRole="Message" ToRole="MessagePic" />
+        </EntityType>
+        <EntityType Name="MessagePic">
+          <Key>
+            <PropertyRef Name="PicID" />
+          </Key>
+          <Property Name="PicID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MessageID" Type="Int32" Nullable="false" />
+          <Property Name="PicURL" Type="Int32" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="CreateUserID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Message" Relationship="Self.FK_MessagePic_Message" FromRole="MessagePic" ToRole="Message" />
+          <NavigationProperty Name="UserList" Relationship="Self.FK_MessagePic_UserList" FromRole="MessagePic" ToRole="UserList" />
+        </EntityType>
+        <EntityType Name="OperateLog">
+          <Key>
+            <PropertyRef Name="OperateID" />
+          </Key>
+          <Property Name="OperateID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserID" Type="Int32" Nullable="false" />
+          <Property Name="OperateTable" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="TargetID" Type="Int32" Nullable="false" />
+          <Property Name="OperateJSON" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="IP" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="UserList" Relationship="Self.FK_OperateLog_UserList" FromRole="OperateLog" ToRole="UserList" />
+        </EntityType>
+        <EntityType Name="UserList">
+          <Key>
+            <PropertyRef Name="UserID" />
+          </Key>
+          <Property Name="UserID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserName" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UserPW" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UserEmail" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UserAccess" Type="Int32" Nullable="false" />
+          <Property Name="UserStatus" Type="Boolean" Nullable="false" />
+          <Property Name="CreateIP" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="MajorMessageList" Relationship="Self.FK_MajorMessageList_UserList" FromRole="UserList" ToRole="MajorMessageList" />
+          <NavigationProperty Name="Message" Relationship="Self.FK_Message_UserList" FromRole="UserList" ToRole="Message" />
+          <NavigationProperty Name="MessagePic" Relationship="Self.FK_MessagePic_UserList" FromRole="UserList" ToRole="MessagePic" />
+          <NavigationProperty Name="OperateLog" Relationship="Self.FK_OperateLog_UserList" FromRole="UserList" ToRole="OperateLog" />
+          <NavigationProperty Name="UserLog" Relationship="Self.FK_UserLog_UserList" FromRole="UserList" ToRole="UserLog" />
+        </EntityType>
+        <EntityType Name="UserLog">
+          <Key>
+            <PropertyRef Name="UserLogID" />
+          </Key>
+          <Property Name="UserLogID" Type="Int32" Nullable="false" />
+          <Property Name="UserID" Type="Int32" Nullable="false" />
+          <Property Name="UserOperator" Type="String" MaxLength="5" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="IP" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="UserList" Relationship="Self.FK_UserLog_UserList" FromRole="UserLog" ToRole="UserList" />
+        </EntityType>
+        <Association Name="FK_MajorMessageList_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="0..1" />
+          <End Role="MajorMessageList" Type="Self.MajorMessageList" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="MajorMessageList">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Message_MajorMessageList">
+          <End Role="MajorMessageList" Type="Self.MajorMessageList" Multiplicity="1" />
+          <End Role="Message" Type="Self.Message" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="MajorMessageList">
+              <PropertyRef Name="MajorID" />
+            </Principal>
+            <Dependent Role="Message">
+              <PropertyRef Name="MajorID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Message_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="Message" Type="Self.Message" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="Message">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_MessagePic_Message">
+          <End Role="Message" Type="Self.Message" Multiplicity="1" />
+          <End Role="MessagePic" Type="Self.MessagePic" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Message">
+              <PropertyRef Name="MessageID" />
+            </Principal>
+            <Dependent Role="MessagePic">
+              <PropertyRef Name="MessageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_MessagePic_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="MessagePic" Type="Self.MessagePic" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="MessagePic">
+              <PropertyRef Name="CreateUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_OperateLog_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="OperateLog" Type="Self.OperateLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="OperateLog">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserLog_UserList">
+          <End Role="UserList" Type="Self.UserList" Multiplicity="1" />
+          <End Role="UserLog" Type="Self.UserLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserList">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="UserLog">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="MessageBoardEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="MajorMessageList" EntityType="Self.MajorMessageList" />
+          <EntitySet Name="Message" EntityType="Self.Message" />
+          <EntitySet Name="MessagePic" EntityType="Self.MessagePic" />
+          <EntitySet Name="OperateLog" EntityType="Self.OperateLog" />
+          <EntitySet Name="UserList" EntityType="Self.UserList" />
+          <EntitySet Name="UserLog" EntityType="Self.UserLog" />
+          <AssociationSet Name="FK_MajorMessageList_UserList" Association="Self.FK_MajorMessageList_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="MajorMessageList" EntitySet="MajorMessageList" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Message_MajorMessageList" Association="Self.FK_Message_MajorMessageList">
+            <End Role="MajorMessageList" EntitySet="MajorMessageList" />
+            <End Role="Message" EntitySet="Message" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Message_UserList" Association="Self.FK_Message_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="Message" EntitySet="Message" />
+          </AssociationSet>
+          <AssociationSet Name="FK_MessagePic_Message" Association="Self.FK_MessagePic_Message">
+            <End Role="Message" EntitySet="Message" />
+            <End Role="MessagePic" EntitySet="MessagePic" />
+          </AssociationSet>
+          <AssociationSet Name="FK_MessagePic_UserList" Association="Self.FK_MessagePic_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="MessagePic" EntitySet="MessagePic" />
+          </AssociationSet>
+          <AssociationSet Name="FK_OperateLog_UserList" Association="Self.FK_OperateLog_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="OperateLog" EntitySet="OperateLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserLog_UserList" Association="Self.FK_UserLog_UserList">
+            <End Role="UserList" EntitySet="UserList" />
+            <End Role="UserLog" EntitySet="UserLog" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="MessageBoardModelStoreContainer" CdmEntityContainer="MessageBoardEntities">
+          <EntitySetMapping Name="MajorMessageList">
+            <EntityTypeMapping TypeName="MessageBoardModel.MajorMessageList">
+              <MappingFragment StoreEntitySet="MajorMessageList">
+                <ScalarProperty Name="MajorID" ColumnName="MajorID" />
+                <ScalarProperty Name="MessageStatus" ColumnName="MessageStatus" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="CreateUserID" ColumnName="CreateUserID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Message">
+            <EntityTypeMapping TypeName="MessageBoardModel.Message">
+              <MappingFragment StoreEntitySet="Message">
+                <ScalarProperty Name="MessageID" ColumnName="MessageID" />
+                <ScalarProperty Name="MajorID" ColumnName="MajorID" />
+                <ScalarProperty Name="MessageCount" ColumnName="MessageCount" />
+                <ScalarProperty Name="Message1" ColumnName="Message" />
+                <ScalarProperty Name="MessageStatus" ColumnName="MessageStatus" />
+                <ScalarProperty Name="IP" ColumnName="IP" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="CreateUserID" ColumnName="CreateUserID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="MessagePic">
+            <EntityTypeMapping TypeName="MessageBoardModel.MessagePic">
+              <MappingFragment StoreEntitySet="MessagePic">
+                <ScalarProperty Name="PicID" ColumnName="PicID" />
+                <ScalarProperty Name="MessageID" ColumnName="MessageID" />
+                <ScalarProperty Name="PicURL" ColumnName="PicURL" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="CreateUserID" ColumnName="CreateUserID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OperateLog">
+            <EntityTypeMapping TypeName="MessageBoardModel.OperateLog">
+              <MappingFragment StoreEntitySet="OperateLog">
+                <ScalarProperty Name="OperateID" ColumnName="OperateID" />
+                <ScalarProperty Name="UserID" ColumnName="UserID" />
+                <ScalarProperty Name="OperateTable" ColumnName="OperateTable" />
+                <ScalarProperty Name="TargetID" ColumnName="TargetID" />
+                <ScalarProperty Name="OperateJSON" ColumnName="OperateJSON" />
+                <ScalarProperty Name="IP" ColumnName="IP" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserList">
+            <EntityTypeMapping TypeName="MessageBoardModel.UserList">
+              <MappingFragment StoreEntitySet="UserList">
+                <ScalarProperty Name="UserID" ColumnName="UserID" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="UserPW" ColumnName="UserPW" />
+                <ScalarProperty Name="UserEmail" ColumnName="UserEmail" />
+                <ScalarProperty Name="UserAccess" ColumnName="UserAccess" />
+                <ScalarProperty Name="UserStatus" ColumnName="UserStatus" />
+                <ScalarProperty Name="CreateIP" ColumnName="CreateIP" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserLog">
+            <EntityTypeMapping TypeName="MessageBoardModel.UserLog">
+              <MappingFragment StoreEntitySet="UserLog">
+                <ScalarProperty Name="UserLogID" ColumnName="UserLogID" />
+                <ScalarProperty Name="UserID" ColumnName="UserID" />
+                <ScalarProperty Name="UserOperator" ColumnName="UserOperator" />
+                <ScalarProperty Name="IP" ColumnName="IP" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="無" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

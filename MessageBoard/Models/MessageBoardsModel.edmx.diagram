@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="b8b67623446c4d269ab4e2a78d6e512c" Name="Diagram1">
+        <EntityTypeShape EntityType="MessageBoardModel.MajorMessageList" Width="1.5" PointX="3" PointY="1.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="MessageBoardModel.Message" Width="1.5" PointX="5.25" PointY="3.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="MessageBoardModel.MessagePic" Width="1.5" PointX="7.5" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="MessageBoardModel.OperateLog" Width="1.5" PointX="3" PointY="4.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="MessageBoardModel.UserList" Width="1.5" PointX="0.75" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="MessageBoardModel.UserLog" Width="1.5" PointX="3" PointY="7.875" IsExpanded="true" />
+        <AssociationConnector Association="MessageBoardModel.FK_MajorMessageList_UserList" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_Message_MajorMessageList" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_Message_UserList" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_MessagePic_Message" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_MessagePic_UserList" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_OperateLog_UserList" ManuallyRouted="false" />
+        <AssociationConnector Association="MessageBoardModel.FK_UserLog_UserList" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
