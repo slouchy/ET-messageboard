@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageBoard.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,6 +9,8 @@ namespace MessageBoard.Controllers
 {
     public class LoginController : Controller
     {
+        UserTool userTool = new UserTool();
+
         [AllowAnonymous]
         [HttpGet]
         // GET: Login
@@ -15,17 +18,17 @@ namespace MessageBoard.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public ActionResult UserLogin(string userName, string userPw)
         {
-            if ((userName == "1" && userPw == "1"))
+            if (userTool.isUserEqulsDB(userName, userPw))
             {
-                
                 System.Web.Security.FormsAuthentication.SetAuthCookie(userName, false);
                 return RedirectToAction("Index", "List");
             }
 
-            TempData["Message"] = "Login failed.User name or password supplied doesn't exist.";
+            TempData["UserName"] = userName;
             return RedirectToAction("Index");
         }
     }

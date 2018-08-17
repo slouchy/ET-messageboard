@@ -26,7 +26,7 @@
                         <label for="userName">使用者名稱</label>
                     </div>
                     <div class="col-6 text-left">
-                        <input type="text" id="userName" name="userName" class="form-control user-info" placeholder="使用者名稱" v-on:keyup="CheckUserName" v-on:blur="CheckUserName" />
+                        <input type="text" id="userName" name="userName" value="@TempData["UserName"]" class="form-control user-info" placeholder="使用者名稱" v-on:keyup="CheckUserName" v-on:blur="CheckUserName" />
                     </div>
                     <div class="col-3 text-left"></div>
                 </div>
@@ -56,14 +56,14 @@
                     <div class="col-6 text-center">
                         <input type="submit" class="btn btn-primary btn-login" value="登入" :disabled="!isEnabledSubmit" v-on:click="UserLogin" /></div>
                     <div class="col-4 text-center">
-                        <button type="button" class="btn btn-sm btn-Link">註冊</button> |
-                        <button type="button" class="btn btn-sm btn-Link">忘記密碼</button>
+                        @Html.ActionLink("註冊", "Index", "Register", null, new { @class = "btn btn-light btn-sm" }) |
+                        @Html.ActionLink("忘記密碼", "Index", "ForgetPW", null, new { @class = "btn btn-light btn-sm" })
                     </div>
                 </div>
             </div>
         }
 
-        @if (TempData["Message"] != null)
+        @if (TempData["UserName"] != null)
         {
             // alert Message
             <div class="modal fade" id="dgLoginFail" tabindex="-1" role="dialog" aria-labelledby="dgLoginFail" aria-hidden="true">
