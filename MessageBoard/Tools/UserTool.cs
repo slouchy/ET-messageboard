@@ -81,11 +81,11 @@ namespace MessageBoard.Tools
                     messageBoardEntities.SaveChanges();
                     DoUserLog(userList.UserID, "註冊成功");
                     msg = "註冊成功，即將跳轉至登入頁";
+                    result = true;
                 }
                 catch (Exception err)
                 {
                     errorList.Add("發生錯誤");
-                    result = false;
                     LogTool.DoErrorLog($"{err.Message}\r\n{err.StackTrace}");
                 }
             }

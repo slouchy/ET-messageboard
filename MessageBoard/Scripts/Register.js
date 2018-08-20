@@ -26,16 +26,16 @@ let app = new Vue({
         registerMsg: ""
     },
     methods: {
-        btnCloseDialog(evt) {
+        btnCloseDialog() {
             if (this.isRegisterOK) {
-                window.location.href = "Login/";
+                window.location.href = "Login";
             }
         },
         CheckUserEmail(evt) {
             let $this = $(evt.target);
             let errorMsg = "";
+            let _this = this;
 
-            this.isEmailOK = true;
             if (!isEmailSyntaxOK($this.val())) {
                 errorMsg = "信箱檢驗失敗";
                 this.isEmailOK = false;
@@ -44,6 +44,7 @@ let app = new Vue({
                 ajaxTimeout = setTimeout(() => {
                     axios.get(`Register/CheckUserEmail/?userEmail=${encodeURI($this.val())}`)
                         .then((result) => {
+                            _this.isEmailOK = result.data.isOK;
                             SetPopover(this, $this, !result.data.isOK, "使用者信箱已經存在");
                         })
                         .catch((msg) => { console.error(msg); });
@@ -55,19 +56,19 @@ let app = new Vue({
         CheckUserAccount(evt) {
             let $this = $(evt.target);
             let userCheck = GetUserAccountOK($this.val());
+            let _this = this;
 
             if (userCheck.result) {
                 clearTimeout(ajaxTimeout);
                 ajaxTimeout = setTimeout(() => {
-                    axios.get(`Register/CheckUserExist/?userAccount=${encodeURI($this.val())}`)
-                        .then((result) => {
-                            SetPopover(this, $this, !result.data.isOK, "使用者帳號已經存在");
-
-                            if (result.data.isOK) {
-                                this.isUserOK = true;
-                            }
-                        })
-                        .catch((msg) => { console.error(msg); });
+                    if ($this.val() !== "") {
+                        axios.get(`Register/CheckUserExist/?userAccount=${encodeURI($this.val())}`)
+                            .then((result) => {
+                                _this.isUserOK = result.data.isOK;
+                                SetPopover(_this, $this, !result.data.isOK, "使用者帳號已經存在");
+                            })
+                            .catch((msg) => { console.error(msg); });
+                    }
                 }, 300);
             } else {
                 SetPopover(this, $this, !userCheck.result, userCheck.msg);
@@ -107,26 +108,32 @@ let app = new Vue({
             $(evt.target).focus();
             if (!this.isFieldOK()) {
                 evt.preventDefault();
-
             } else {
-                axios.post("Register/UserRegister/", {
-                    userAccount: encodeURI(this.userAccount),
-                    userPW1: encodeURI(this.pw1),
-                    userPW2: encodeURI(this.pw2),
-                    userEmail: encodeURI(this.userEmail)
-                })
-                    .then((result) => {
-                        $("#dgRegister").modal({
-                            keyboard: false
-                        });
-
-                        _this.isRegisterOK = result.data.isOK;
-                        _this.errorList = result.data.errorList;
-                        _this.registerMsg = result.data.msg;
+                setTimeout(() => {
+                    $(evt.target).focus();
+                    $(".user-info").prop("disabled", true);
+                    axios.post("Register/UserRegister", {
+                        userAccount: encodeURI(this.userAccount),
+                        userPW1: encodeURI(this.pw1),
+                        userPW2: encodeURI(this.pw2),
+                        userEmail: encodeURI(this.userEmail)
                     })
-                    .catch((msg) => {
-                        console.error(msg);
-                    });
+                        .then((result) => {
+                            $("#dgRegister").modal({
+                                keyboard: false
+                            });
+
+                            _this.isRegisterOK = result.data.isOK;
+                            _this.errorList = result.data.errorList;
+                            _this.registerMsg = result.data.msg;
+                            if (!_this.isRegisterOK) {
+                                $(".user-info").prop("disabled", false);
+                            }
+                        })
+                        .catch((msg) => {
+                            console.error(msg);
+                        });
+                }, 300);
             }
         }
     }
