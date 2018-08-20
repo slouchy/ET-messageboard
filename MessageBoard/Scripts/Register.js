@@ -22,41 +22,28 @@ let app = new Vue({
     },
     methods: {
         CheckUserEmail(evt) {
-            let $this = $(evt.target);
-            let regEmailAddress = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
+            let $this = $(evt.target);            
             let errorMsg = "";
 
             this.isEmailOK = true;
-            if (!regEmailAddress.test($this.val())) {
+            if (!isEmailSyntaxOK($this.val())) {
                 errorMsg = "信箱檢驗失敗";
                 this.isEmailOK = false;
             }
 
-            this.SetPopover($this, errorMsg !== "", errorMsg);
+            SetPopover(this, $this, errorMsg !== "", errorMsg);
         },
-        CheckUserName(evt) {
+        CheckUserAccount(evt) {
             let $this = $(evt.target);
-            let maxLength = 20;
-            let errorMsg = "";
-
-            this.isUserOK = false;
-            if ($this.val().length > maxLength) {
-                errorMsg = `輸入長度超過 ${maxLength} 字`;
-            } else if ($this.val().length === 0) {
-                errorMsg = `請輸入使用者名稱`;
-            } else {
-                this.isUserOK = true;
-            }
-
-            this.SetPopover($this, errorMsg !== "", errorMsg);
+            let userCheck = GetUserAccountOK($this.val());
+            SetPopover(this, $this, !userCheck.result, userCheck.msg);
         },
         CheckUserPw(evt) {
             let $this = $(evt.target);
-            let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}/;
             let errorMsg = "<ul class='popover-content'>";
 
             this.isPWOK = true;
-            if (!regPW.test($this.val())) {
+            if (!isPwSyntaxOK($this.val())) {
                 errorMsg += "<li>密碼檢驗失敗</li>";
                 this.isPWOK = false;
             }
@@ -67,23 +54,14 @@ let app = new Vue({
             }
 
             errorMsg += "</ul>";
-
             if (this.isPWOK) {
                 errorMsg = "";
             }
 
-            this.SetPopover($(".user-pw"), errorMsg !== "", errorMsg);
+            SetPopover(this, $(".user-pw"), errorMsg !== "", errorMsg);
         },
         isFieldOK() {
             return this.isPWOK && this.isEmailOK && this.isUserOK;
-        },
-        SetPopover($this, isShowMsg, errorMsg) {
-            $this.attr("data-content", errorMsg);
-            $this.popover(isShowMsg ? "show" : "hide");
-            this.isEnabledSubmit = false;
-            if (this.isFieldOK()) {
-                this.isEnabledSubmit = true;
-            }
         },
         UserRegister(evt) {
             $(".user-info").each(function () {
@@ -95,6 +73,5 @@ let app = new Vue({
                 evt.preventDefault();
             }
         }
-    },
-    watch: {}
+    }
 });

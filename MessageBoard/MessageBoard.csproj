@@ -117,6 +117,7 @@
       <DependentUpon>MessageBoardsModel.edmx</DependentUpon>
       <LastGenOutput>MessageBoardsModel.cs</LastGenOutput>
     </Content>
+    <Content Include="Scripts\FieldCheck.js" />
     <Content Include="Scripts\Login.js" />
     <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\vue.js" />

@@ -15,45 +15,25 @@ let vueApp = new Vue({
         isUserOK: false
     },
     methods: {
-        CheckUserName(evt) {
+        CheckUserAccount(evt) {
             let $this = $(evt.target);
-            let maxLength = 20;
-            let errorMsg = "";
-
-            this.isUserOK = false;
-            if ($this.val().length > maxLength) {
-                errorMsg = `輸入長度超過 ${maxLength} 字`;
-            } else if ($this.val().length === 0) {
-                errorMsg = `請輸入使用者名稱`;
-            } else {
-                this.isUserOK = true;
-            }
-
-            this.SetPopover($this, errorMsg !== "", errorMsg);
+            let userCheck = GetUserAccountOK($this.val());
+            SetPopover(this, $this, !userCheck.result, userCheck.msg);
         },
         CheckUserPw(evt) {
             let $this = $(evt.target);
-            let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}/;
             let errorMsg = "";
 
             this.isPWOK = true;
-            if (!regPW.test($this.val())) {
+            if (!isPwSyntaxOK($this.val())) {
                 errorMsg = "密碼檢驗失敗";
                 this.isPWOK = false;
             }
 
-            this.SetPopover($this, errorMsg !== "", errorMsg);
+            SetPopover(this, $this, errorMsg !== "", errorMsg);
         },
         isFieldOK() {
             return this.isPWOK && this.isUserOK;
-        },
-        SetPopover($this, isShowMsg, errorMsg) {
-            $this.attr("data-content", errorMsg);
-            $this.popover(isShowMsg ? "show" : "hide");
-            this.isEnabledSubmit = false;
-            if (this.isFieldOK()) {
-                this.isEnabledSubmit = true;
-            }
         },
         UserLogin(evt) {
             $(".user-info").each(function () {
