@@ -12,13 +12,17 @@ let vueApp = new Vue({
     data: {
         isEnabledSubmit: false,
         isPWOK: false,
-        isUserOK: false
+        isUserOK: true
     },
     methods: {
         CheckUserAccount(evt) {
             let $this = $(evt.target);
             let userCheck = GetUserAccountOK($this.val());
+
             SetPopover(this, $this, !userCheck.result, userCheck.msg);
+            if (userCheck.result) {
+                this.isUserOK = true;
+            }
         },
         CheckUserPw(evt) {
             let $this = $(evt.target);

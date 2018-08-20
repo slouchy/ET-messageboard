@@ -31,8 +31,7 @@ namespace MessageBoard.Controllers
 
             ReturnJSON returnJSON = new ReturnJSON()
             {
-                isOK = userTool.isNotExistUserName(userAccount),
-                msg = ""
+                isOK = userTool.isNotExistUserName(HttpUtility.UrlDecode(userAccount))
             };
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
@@ -48,34 +47,31 @@ namespace MessageBoard.Controllers
 
             ReturnJSON returnJSON = new ReturnJSON()
             {
-                isOK = userTool.isNotExistEmail(userEmail),
-                msg = ""
+                isOK = userTool.isNotExistEmail(HttpUtility.UrlDecode(userEmail))
             };
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
         public ActionResult UserRegister(string userAccount, string userPW1, string userPW2, string userEmail)
         {
-            //var registerResult = userTool.RegisterUser(userAccount, userPW1, userPW2, userEmail);
-            //if (registerResult.Item1)
-            //{
+            var registerResult = userTool.RegisterUser(userAccount, userPW1, userPW2, userEmail);
+            ReturnJSON returnJSON = new ReturnJSON()
+            {
+                isOK = registerResult.Item1,
+                errorList = registerResult.Item2,
+                msg = registerResult.Item3
+            };
 
-            //}
-            //else {
-            //    TempData["registerMsg"] = "註冊失敗";
-            //    TempData["registerMsg"] = "註冊失敗";
-            //}
-            //return Content($"{userAccount}, {userPW1}, {userPW2}, {userEmail}");
-
-            //TempData["registerMsg"] = "註冊失敗";
-            //TempData["registerError"] = "註冊失敗";
-            //return RedirectToAction("Index");
+            return Json(returnJSON);
         }
 
         public class ReturnJSON
         {
             public bool isOK { get; set; }
             public string msg { get; set; }
+            public List<string> errorList { get; set; }
         }
     }
 }

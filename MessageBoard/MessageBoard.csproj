@@ -107,6 +107,7 @@
       <DependentUpon>bootstrapCorrect.css</DependentUpon>
     </Content>
     <Content Include="Global.asax" />
+    <None Include="Log\.gitKeep" />
     <Content Include="Models\MessageBoardsModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>MessageBoardsModel.edmx</DependentUpon>

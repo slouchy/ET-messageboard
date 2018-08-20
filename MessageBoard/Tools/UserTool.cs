@@ -18,16 +18,16 @@ namespace MessageBoard.Tools
         /// <summary>
         /// 檢驗使用者是否登入成功
         /// </summary>
-        /// <param name="userName">使用者姓名</param>
+        /// <param name="userAccount">使用者姓名</param>
         /// <param name="userPw">使用者密碼</param>
         /// <returns>回傳檢驗結果</returns>
-        public bool isUserEqulsDB(string userName, string userPw)
+        public bool isUserEqulsDB(string userAccount, string userPw)
         {
-            if (isUserNameCorrect(userName) && isUserPWCorrect(userPw))
+            if (isUserNameCorrect(userAccount) && isUserPWCorrect(userPw))
             {
                 string saltedPw = GetSaltPW(userPw);
                 var userData = messageBoardEntities.UserList
-                    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+                    .Where(r => r.UserName.Equals(userAccount, StringComparison.CurrentCultureIgnoreCase));
                 if (userData.Any())
                 {
                     var loginUser = userData
@@ -50,15 +50,18 @@ namespace MessageBoard.Tools
         /// <para>回傳項目</para>
         /// <para>Item1(bool) 註冊結果</para>
         /// <para>Item2(List<stirng>) 錯誤代碼</para>
+        /// <para>Item3(string) 相關訊息</para>
         /// </summary>
-        /// <param name="userName">使用者名稱</param>
-        /// <param name="userPw">使用者密碼</param>
+        /// <param name="userAccount">使用者名稱</param>
+        /// <param name="userPw1">使用者密碼</param>
+        /// <param name="userPw2">使用者密碼</param>
         /// <param name="email">Email</param>
         /// <returns></returns>
-        public Tuple<bool, List<string>> RegisterUser(string userName, string userPw, string email)
+        public Tuple<bool, List<string>, string> RegisterUser(string userAccount, string userPw1, string userPw2, string email)
         {
             bool result = false;
-            List<string> errorList = GetFieldCheckError(userName, userPw, email);
+            List<string> errorList = GetFieldCheckError(userAccount, userPw1, userPw2, email);
+            string msg = "註冊失敗";
 
             if (!errorList.Any())
             {
@@ -69,58 +72,91 @@ namespace MessageBoard.Tools
                         CreateDate = DateTime.Now,
                         CreateIP = PBTool.GetIP(),
                         UserEmail = email,
-                        UserName = userName,
-                        UserPW = GetSaltPW(userPw),
+                        UserName = userAccount,
+                        UserPW = GetSaltPW(userPw1),
                         UserAccess = 1,
                         UserStatus = true
                     };
                     messageBoardEntities.UserList.Add(userList);
                     messageBoardEntities.SaveChanges();
-                    result = true;
                     DoUserLog(userList.UserID, "註冊成功");
+                    msg = "註冊成功，即將跳轉至登入頁";
                 }
                 catch (Exception err)
                 {
-                    LogTool.DoErrorLog($"{err.Message}\r\n");
+                    errorList.Add("發生錯誤");
+                    result = false;
+                    LogTool.DoErrorLog($"{err.Message}\r\n{err.StackTrace}");
                 }
             }
-            return Tuple.Create(result, errorList);
+            return Tuple.Create(result, errorList, msg);
+        }
+
+        /// <summary>
+        /// 檢查 Email 是否不存在
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <returns>回傳檢查結果</returns>
+        public bool isNotExistEmail(string email)
+        {
+            return !messageBoardEntities.UserList
+                .Where(r => r.UserEmail.Equals(email, StringComparison.CurrentCultureIgnoreCase))
+                .Any();
+        }
+
+
+        /// <summary>
+        /// 檢查使用者是否不存在
+        /// </summary>
+        /// <param name="userAccount">使用者名稱</param>
+        /// <returns>回傳檢查結果</returns>
+        public bool isNotExistUserName(string userAccount)
+        {
+            return !messageBoardEntities.UserList
+                .Where(r => r.UserName.Equals(userAccount, StringComparison.CurrentCultureIgnoreCase))
+                .Any();
         }
 
         /// <summary>
         /// 取得註冊時檢查欄位的正確性
         /// </summary>
-        /// <param name="userName">使用者名稱</param>
-        /// <param name="userPw">使用者密碼</param>
+        /// <param name="userAccount">使用者名稱</param>
+        /// <param name="userPw1">使用者密碼</param>
+        /// <param name="userPw2">使用者密碼</param>
         /// <param name="email">電子信箱</param>
         /// <returns>回傳檢查結果</returns>
-        private List<string> GetFieldCheckError(string userName, string userPw, string email)
+        private List<string> GetFieldCheckError(string userAccount, string userPw1, string userPw2, string email)
         {
             List<string> errorList = new List<string>();
 
-            if (!isUserNameCorrect(userName))
+            if (!isUserNameCorrect(userAccount))
             {
-                errorList.Add("0");
+                errorList.Add("使用者名稱不得空白或長度超過 20 字");
             }
 
-            if (!isNotExistUserName(userName))
+            if (!isNotExistUserName(userAccount))
             {
-                errorList.Add("1");
+                errorList.Add("使用者名稱已存在");
             }
 
-            if (!isUserPWCorrect(userPw))
+            if (!isUserPWCorrect(userPw1))
             {
-                errorList.Add("2");
+                errorList.Add("密碼檢驗失敗");
+            }
+
+            if (userPw1 != userPw2)
+            {
+                errorList.Add("前後密碼不同");
             }
 
             if (!isEmailCorrect(email))
             {
-                errorList.Add("3");
+                errorList.Add("email 格式錯誤");
             }
 
             if (!isNotExistEmail(email))
             {
-                errorList.Add("4");
+                errorList.Add("email 已經存在");
             }
 
             return errorList;
@@ -129,23 +165,11 @@ namespace MessageBoard.Tools
         /// <summary>
         /// 檢查使用者名稱長度
         /// </summary>
-        /// <param name="userName">使用者名稱</param>
+        /// <param name="userAccount">使用者名稱</param>
         /// <returns>回傳檢查結果</returns>
-        private bool isUserNameCorrect(string userName)
+        private bool isUserNameCorrect(string userAccount)
         {
-            return userName.Length > 0 && userName.Length <= 20;
-        }
-
-        /// <summary>
-        /// 檢查使用者是否不存在
-        /// </summary>
-        /// <param name="userName">使用者名稱</param>
-        /// <returns>回傳檢查結果</returns>
-        private bool isNotExistUserName(string userName)
-        {
-            return !messageBoardEntities.UserList
-                .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase))
-                .Any();
+            return userAccount.Length > 0 && userAccount.Length <= 20;
         }
 
         /// <summary>
@@ -168,18 +192,6 @@ namespace MessageBoard.Tools
         {
             Regex regEmail = new Regex(@"^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$");
             return email != string.Empty && regEmail.IsMatch(email);
-        }
-
-        /// <summary>
-        /// 檢查 Email 是否不存在
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <returns>回傳檢查結果</returns>
-        private bool isNotExistEmail(string email)
-        {
-            return !messageBoardEntities.UserList
-                .Where(r => r.UserEmail.Equals(email, StringComparison.CurrentCultureIgnoreCase))
-                .Any();
         }
 
         /// <summary>

@@ -2,7 +2,6 @@
 
 let ajaxTimeout = null;
 $(function () {
-    $("#dgRegister").modal();
     $("input[type='text'], input[type='password'], input[type='email']").popover({
         template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
         placement: "right",
@@ -14,14 +13,24 @@ $(function () {
 let app = new Vue({
     el: "#main",
     data: {
-        isEnabledSubmit: false,
+        isEnabledSubmit: true,
         isEmailOK: false,
         isPWOK: false,
         isUserOK: false,
+        isRegisterOK: false,
         pw1: "",
-        pw2: ""
+        pw2: "",
+        userAccount: "",
+        userEmail: "",
+        errorList: null,
+        registerMsg: ""
     },
     methods: {
+        btnCloseDialog(evt) {
+            if (this.isRegisterOK) {
+                window.location.href = "Login/";
+            }
+        },
         CheckUserEmail(evt) {
             let $this = $(evt.target);
             let errorMsg = "";
@@ -33,7 +42,7 @@ let app = new Vue({
             } else {
                 clearTimeout(ajaxTimeout);
                 ajaxTimeout = setTimeout(() => {
-                    axios.get(`Register/CheckUserEmail/?userEmail=${$this.val()}`)
+                    axios.get(`Register/CheckUserEmail/?userEmail=${encodeURI($this.val())}`)
                         .then((result) => {
                             SetPopover(this, $this, !result.data.isOK, "使用者信箱已經存在");
                         })
@@ -50,7 +59,7 @@ let app = new Vue({
             if (userCheck.result) {
                 clearTimeout(ajaxTimeout);
                 ajaxTimeout = setTimeout(() => {
-                    axios.get(`Register/CheckUserExist/?userAccount=${$this.val()}`)
+                    axios.get(`Register/CheckUserExist/?userAccount=${encodeURI($this.val())}`)
                         .then((result) => {
                             SetPopover(this, $this, !result.data.isOK, "使用者帳號已經存在");
 
@@ -90,6 +99,7 @@ let app = new Vue({
             return this.isPWOK && this.isEmailOK && this.isUserOK;
         },
         UserRegister(evt) {
+            let _this = this;
             $(".user-info").each(function () {
                 $(this).focus();
             });
@@ -97,6 +107,26 @@ let app = new Vue({
             $(evt.target).focus();
             if (!this.isFieldOK()) {
                 evt.preventDefault();
+
+            } else {
+                axios.post("Register/UserRegister/", {
+                    userAccount: encodeURI(this.userAccount),
+                    userPW1: encodeURI(this.pw1),
+                    userPW2: encodeURI(this.pw2),
+                    userEmail: encodeURI(this.userEmail)
+                })
+                    .then((result) => {
+                        $("#dgRegister").modal({
+                            keyboard: false
+                        });
+
+                        _this.isRegisterOK = result.data.isOK;
+                        _this.errorList = result.data.errorList;
+                        _this.registerMsg = result.data.msg;
+                    })
+                    .catch((msg) => {
+                        console.error(msg);
+                    });
             }
         }
     }
