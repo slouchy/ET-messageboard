@@ -244,7 +244,7 @@ namespace MessageBoard.Tools
             }
             catch (Exception err)
             {
-                LogTool.DoErrorLog($"{err.Message}\r\n");
+                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
                 throw;
             }
         }

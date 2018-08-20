@@ -56,7 +56,11 @@ namespace MessageBoard.Controllers
         [HttpPost]
         public ActionResult UserRegister(string userAccount, string userPW1, string userPW2, string userEmail)
         {
-            var registerResult = userTool.RegisterUser(userAccount, userPW1, userPW2, userEmail);
+            userAccount = HttpUtility.UrlDecode(userAccount);
+            userPW1 = HttpUtility.UrlDecode(userPW1);
+            userPW2 = HttpUtility.UrlDecode(userPW2);
+            userEmail = HttpUtility.UrlDecode(userEmail);
+            var registerResult = userTool.RegisterUser( userAccount, userPW1, userPW2, userEmail);
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = registerResult.Item1,

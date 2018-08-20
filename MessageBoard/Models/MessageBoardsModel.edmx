@@ -56,7 +56,7 @@
           <Property Name="UserID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="UserName" Type="nvarchar" MaxLength="20" Nullable="false" />
           <Property Name="UserPW" Type="nvarchar" MaxLength="40" Nullable="false" />
-          <Property Name="UserEmail" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="UserEmail" Type="nvarchar" MaxLength="200" Nullable="false" />
           <Property Name="UserAccess" Type="int" Nullable="false" />
           <Property Name="UserStatus" Type="bit" Nullable="false" />
           <Property Name="CreateIP" Type="nvarchar" MaxLength="15" Nullable="false" />
@@ -255,7 +255,7 @@
           <Property Name="UserID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="UserName" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="UserPW" Type="String" MaxLength="40" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="UserEmail" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UserEmail" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="UserAccess" Type="Int32" Nullable="false" />
           <Property Name="UserStatus" Type="Boolean" Nullable="false" />
           <Property Name="CreateIP" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
