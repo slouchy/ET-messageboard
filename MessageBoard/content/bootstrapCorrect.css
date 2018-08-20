@@ -1,0 +1,9 @@
+﻿body .arrow-danger::after {
+  border-right-color: #dc3545 !important;
+}
+body .popover-content {
+  margin: 0px auto;
+  padding: 0px 10px;
+  margin-bottom: 0;
+  list-style: decimal;
+}

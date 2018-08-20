@@ -100,6 +100,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="content\bootstrapCorrect.css">
+      <DependentUpon>bootstrapCorrect.less</DependentUpon>
+    </Content>
+    <Content Include="content\bootstrapCorrect.min.css">
+      <DependentUpon>bootstrapCorrect.css</DependentUpon>
+    </Content>
     <Content Include="Global.asax" />
     <Content Include="Models\MessageBoardsModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -112,6 +118,7 @@
       <LastGenOutput>MessageBoardsModel.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\Login.js" />
+    <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\vue.js" />
     <Content Include="Scripts\vue.min.js" />
     <Content Include="Web.config">
@@ -176,6 +183,11 @@
     <Content Include="Models\MessageBoardsModel.edmx.diagram">
       <DependentUpon>MessageBoardsModel.edmx</DependentUpon>
     </Content>
+    <Content Include="content\bootstrapCorrect.less" />
+    <None Include="compilerconfig.json" />
+    <None Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </None>
     <None Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\List\Index.cshtml" />

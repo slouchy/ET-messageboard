@@ -20,15 +20,15 @@ namespace MessageBoard.Controllers
         }
 
         [HttpPost]
-        public ActionResult UserLogin(string userName, string userPw)
+        public ActionResult UserLogin(string userAccount, string userPw)
         {
-            if (userTool.isUserEqulsDB(userName, userPw))
+            if (userTool.isUserEqulsDB(userAccount, userPw))
             {
-                System.Web.Security.FormsAuthentication.SetAuthCookie(userName, false);
+                System.Web.Security.FormsAuthentication.SetAuthCookie(userAccount, false);
                 return RedirectToAction("Index", "List");
             }
 
-            TempData["UserName"] = userName;
+            TempData["userAccount"] = userAccount;
             return RedirectToAction("Index");
         }
     }
