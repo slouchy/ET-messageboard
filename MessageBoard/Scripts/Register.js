@@ -1,5 +1,6 @@
 ﻿// ToDo 20180820 嘗試將重複的 JavaScript 提出
 
+let ajaxTimeout = null;
 $(function () {
     $("#dgRegister").modal();
     $("input[type='text'], input[type='password'], input[type='email']").popover({
@@ -22,13 +23,22 @@ let app = new Vue({
     },
     methods: {
         CheckUserEmail(evt) {
-            let $this = $(evt.target);            
+            let $this = $(evt.target);
             let errorMsg = "";
 
             this.isEmailOK = true;
             if (!isEmailSyntaxOK($this.val())) {
                 errorMsg = "信箱檢驗失敗";
                 this.isEmailOK = false;
+            } else {
+                clearTimeout(ajaxTimeout);
+                ajaxTimeout = setTimeout(() => {
+                    axios.get(`Register/CheckUserEmail/?userEmail=${$this.val()}`)
+                        .then((result) => {
+                            SetPopover(this, $this, !result.data.isOK, "使用者信箱已經存在");
+                        })
+                        .catch((msg) => { console.error(msg); });
+                }, 300);
             }
 
             SetPopover(this, $this, errorMsg !== "", errorMsg);
@@ -36,7 +46,23 @@ let app = new Vue({
         CheckUserAccount(evt) {
             let $this = $(evt.target);
             let userCheck = GetUserAccountOK($this.val());
-            SetPopover(this, $this, !userCheck.result, userCheck.msg);
+
+            if (userCheck.result) {
+                clearTimeout(ajaxTimeout);
+                ajaxTimeout = setTimeout(() => {
+                    axios.get(`Register/CheckUserExist/?userAccount=${$this.val()}`)
+                        .then((result) => {
+                            SetPopover(this, $this, !result.data.isOK, "使用者帳號已經存在");
+
+                            if (result.data.isOK) {
+                                this.isUserOK = true;
+                            }
+                        })
+                        .catch((msg) => { console.error(msg); });
+                }, 300);
+            } else {
+                SetPopover(this, $this, !userCheck.result, userCheck.msg);
+            }
         },
         CheckUserPw(evt) {
             let $this = $(evt.target);
