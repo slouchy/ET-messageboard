@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -22,24 +23,51 @@ namespace MessageBoard.Tools
             return (httpPostedFile.ContentLength < allowMaxSize * 1024 * 1024);
         }
 
+        /// <summary>
+        /// 檢查附檔名是否允許
+        /// </summary>
+        /// <param name="fileName">檔案名稱</param>
+        /// <param name="allowRegexStr">待檢查的附檔名正則表達式</param>
+        /// <returns>回傳結果</returns>
         public static bool isFileExtensionAllow(string fileName, string allowRegexStr)
         {
-            Regex regexFile = new Regex(allowRegexStr);
-            return regexFile.IsMatch(fileName);
+            return Regex.IsMatch(fileName, allowRegexStr);
         }
 
+        /// <summary>
+        /// 儲存使用者圖示
+        /// </summary>
+        /// <param name="httpPostedFile">傳遞的檔案</param>
+        /// <param name="fileName">儲存檔案名稱</param>
         public static void SaveUserPic(HttpPostedFileBase httpPostedFile, string fileName)
         {
             try
             {
-                string filePath = $@"~/UserIcon/{fileName}";
-                httpPostedFile.SaveAs(HttpContext.Current.Server.MapPath(filePath));
-                Image originImg = Image.FromFile(filePath);
-                var formattedImg = AddFrame(GetResizeImage(originImg, 400, 400), 400, 400);
+                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/2_{fileName}");
+                string realFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/{fileName}");
+                if (File.Exists(tmpFilePath))
+                {
+                    File.Delete(HttpContext.Current.Server.MapPath(tmpFilePath));
+                }
+
+                httpPostedFile.SaveAs(tmpFilePath);
+                using (Image originImg = Image.FromFile(tmpFilePath))
+                {
+                    using (var formattedImg = AddFrame(GetResizeImage(originImg, 400, 400), 400, 400))
+                    {
+                        formattedImg.Save(realFilePath);
+                    }
+                }
+
+                if (File.Exists(tmpFilePath))
+                {
+                    File.Delete(HttpContext.Current.Server.MapPath(tmpFilePath));
+                }
+                GC.Collect();
             }
             catch (Exception err)
             {
-                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
+                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
             }
         }
 
@@ -47,48 +75,49 @@ namespace MessageBoard.Tools
         /// 在圖片四周加入白邊
         /// </summary>
         /// <param name="imgToAddFrame">圖片</param>
-        /// <param name="width">圖片寬度</param>
-        /// <param name="height">圖片高度</param>
+        /// <param name="width">目標圖片寬度</param>
+        /// <param name="height">目標圖片高度</param>
         /// <returns>Image</returns>
         private static Image AddFrame(Image imgToAddFrame, int width, int height)
         {
             Image newImg = imgToAddFrame;
             if (imgToAddFrame.Width < width || imgToAddFrame.Height < height)
             {
-                using (Bitmap bitmap = new Bitmap(width, height))
-                {
-                    using (Graphics graphics = Graphics.FromImage(bitmap))
-                    {
-                        SolidBrush solidBrush = new SolidBrush(Color.Transparent);//這裏修改顏色
-                        graphics.FillRectangle(solidBrush, 0, 0, width, height);
-                        Rectangle rectangle = new Rectangle(0, 0, imgToAddFrame.Width, imgToAddFrame.Height);
-                        graphics.DrawImage(imgToAddFrame, (width - imgToAddFrame.Width) / 2, (height - imgToAddFrame.Height) / 2, rectangle, GraphicsUnit.Pixel);
-                        newImg = bitmap;
-                    }
-                }
+                ImageFormat format = imgToAddFrame.RawFormat;
+                Bitmap bitmap = new Bitmap(width, height);
+                Graphics graphics = Graphics.FromImage(bitmap);
+                SolidBrush solidBrush = new SolidBrush(format.Equals(ImageFormat.Png) ? Color.Transparent : Color.White);
+                Rectangle rectangle = new Rectangle(0, 0, imgToAddFrame.Width, imgToAddFrame.Height);
+
+                graphics.FillRectangle(solidBrush, 0, 0, width, height);
+                graphics.DrawImage(imgToAddFrame, (width - imgToAddFrame.Width) / 2, (height - imgToAddFrame.Height) / 2, rectangle, GraphicsUnit.Pixel);
+                newImg = bitmap;
             }
 
             return newImg;
         }
 
+        /// <summary>
+        /// 取得縮尺寸的圖片
+        /// </summary>
+        /// <param name="imgToResize">待縮圖的原圖</param>
+        /// <param name="targetWidth">目標寬度</param>
+        /// <param name="targetHeight">目標高度</param>
+        /// <returns></returns>
         private static Image GetResizeImage(Image imgToResize, int targetWidth, int targetHeight)
         {
             Image newImg = imgToResize;
-            ImageFormat format = imgToResize.RawFormat;
             if (imgToResize.Width > targetWidth || imgToResize.Height > targetHeight)
             {
                 float percent = Math.Min(targetHeight / (float)imgToResize.Height, targetWidth / (float)imgToResize.Width);
                 int destHeight = (int)(imgToResize.Height * percent);
                 int destWidth = (int)(imgToResize.Width * percent);
-                using (Bitmap bitmap = new Bitmap(destWidth, destHeight))
-                {
-                    using (Graphics graphics = Graphics.FromImage(imgToResize))
-                    {
-                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        graphics.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
-                        newImg = bitmap;
-                    }
-                }
+                Bitmap bitmap = new Bitmap(destWidth, destHeight);
+                Graphics graphics = Graphics.FromImage(bitmap);
+
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+                newImg = bitmap;
             }
 
             return newImg;

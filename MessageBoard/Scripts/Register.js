@@ -33,6 +33,15 @@ let app = new Vue({
                 window.location.href = "Login";
             }
         },
+        CheckIcon(evt) {
+            let fileCheck = isFileAllow(evt.target.id, 1, /(jpg|gif|png|bmp|jpeg|jpg2000|svg)$/i);
+            if (fileCheck && $(evt.target).val().length > 0) {
+                this.file = this.$refs.file.files[0];
+                this.isFileOK = fileCheck;
+            }
+
+            SetPopover(this, $(evt.target), !this.isFileOK, "檔案檢驗失敗");
+        },
         CheckUserEmail(evt) {
             let $this = $(evt.target);
             let errorMsg = "";
@@ -100,15 +109,6 @@ let app = new Vue({
         },
         isFieldOK() {
             return this.isPWOK && this.isEmailOK && this.isUserOK && this.isFileOK;
-        },
-        UserIconEvt(evt) {
-            let fileCheck = isFileAllow(evt.target.id, 1, /(jpg|gif|png|bmp|jpeg|jpg2000|svg)$/i);
-            this.isFileOK = fileCheck;
-            if (this.isFileOK) {
-                this.file = this.$refs.file.files[0];
-            }           
-
-            SetPopover(this, $(evt.target), !fileCheck, "檔案檢驗失敗");
         },
         UserRegister(evt) {
             let _this = this;

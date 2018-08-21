@@ -77,7 +77,7 @@ namespace MessageBoard.Controllers
                     errorList.Add("檔案大於 1MB");
                 }
 
-                if (!PicTool.isFileExtensionAllow(postFile.FileName, @"/(jpg|gif|png|bmp|jpeg|jpg2000|svg)$"))
+                if (!PicTool.isFileExtensionAllow(postFile.FileName, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$"))
                 {
                     errorList.Add("不是圖像檔案");
                 }
@@ -97,7 +97,7 @@ namespace MessageBoard.Controllers
 
                 if (registerResult.Item1)
                 {
-                    PicTool.SaveUserPic(postFile, $"UserIcom_{registerResult.Item4.UserID}{Path.GetExtension(postFile.FileName)}");
+                    PicTool.SaveUserPic(postFile, $"UserIcon_{registerResult.Item4.UserID}{Path.GetExtension(postFile.FileName)}");
                 }
             }
 
@@ -111,7 +111,7 @@ namespace MessageBoard.Controllers
             return Json(returnJSON);
         }
 
-        public class ReturnJSON
+        private class ReturnJSON
         {
             public bool isOK { get; set; }
             public string msg { get; set; }
