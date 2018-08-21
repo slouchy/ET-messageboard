@@ -60,55 +60,53 @@ namespace MessageBoard.Controllers
         [HttpPost]
         public ActionResult UserRegister(string userAccount, string userPW1, string userPW2, string userEmail)
         {
-            Regex regexFile = new Regex(@"/(jpg|gif|png|bmp|jpeg|jpg2000|svg)$");
             ReturnJSON returnJSON = new ReturnJSON();
+            List<string> errorList = new List<string>();
+            bool isRegisterOK = false;
+            string returnMsg = "註冊失敗";
+
             if (Request.Files.Count == 0)
             {
-                returnJSON = new ReturnJSON()
-                {
-                    isOK = false,
-                    errorList = new List<string>() { "缺少頭像檔案" },
-                    msg = "註冊失敗"
-                };
-            }
-            else if (Request.Files[0].ContentLength >= 1024000)
-            {
-                returnJSON = new ReturnJSON()
-                {
-                    isOK = false,
-                    errorList = new List<string>() { "檔案大於 1MB" },
-                    msg = "註冊失敗"
-                };
-            }
-            else if (regexFile.IsMatch(Request.Files[0].FileName))
-            {
-                returnJSON = new ReturnJSON()
-                {
-                    isOK = false,
-                    errorList = new List<string>() { "不是圖像檔案" },
-                    msg = "註冊失敗"
-                };
+                errorList.Add("請上傳頭像圖檔");
             }
             else
             {
+                HttpPostedFileBase postFile = Request.Files[0];
+                if (!PicTool.isFileSizeAllow(postFile, 1))
+                {
+                    errorList.Add("檔案大於 1MB");
+                }
+
+                if (!PicTool.isFileExtensionAllow(postFile.FileName, @"/(jpg|gif|png|bmp|jpeg|jpg2000|svg)$"))
+                {
+                    errorList.Add("不是圖像檔案");
+                }
+            }
+
+            if (!errorList.Any())
+            {
+                HttpPostedFileBase postFile = Request.Files[0];
                 userAccount = HttpUtility.UrlDecode(userAccount);
                 userPW1 = HttpUtility.UrlDecode(userPW1);
                 userPW2 = HttpUtility.UrlDecode(userPW2);
                 userEmail = HttpUtility.UrlDecode(userEmail);
                 var registerResult = userTool.RegisterUser(userAccount, userPW1, userPW2, userEmail);
+                isRegisterOK = registerResult.Item1;
+                errorList = registerResult.Item2;
+                returnMsg = registerResult.Item3;
 
                 if (registerResult.Item1)
                 {
-                    Request.Files[0].SaveAs(Server.MapPath($@"~/UserIcon/UserIcon_{registerResult.Item4.UserID}{Path.GetExtension(Request.Files[0].FileName)}"));
+                    PicTool.SaveUserPic(postFile, $"UserIcom_{registerResult.Item4.UserID}{Path.GetExtension(postFile.FileName)}");
                 }
-
-                returnJSON = new ReturnJSON()
-                {
-                    isOK = registerResult.Item1,
-                    errorList = registerResult.Item2,
-                    msg = registerResult.Item3
-                };
             }
+
+            returnJSON = new ReturnJSON()
+            {
+                isOK = isRegisterOK,
+                errorList = errorList,
+                msg = returnMsg
+            };
 
             return Json(returnJSON);
         }

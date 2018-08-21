@@ -124,8 +124,6 @@ let app = new Vue({
                     let formData = new FormData();
                     $(evt.target).focus();
                     $(".user-info").prop("disabled", true);
-
-
                     formData.append("userAccount", encodeURI(this.userAccount));
                     formData.append("userPW1", encodeURI(this.pw1));
                     formData.append("userPW2", encodeURI(this.pw2));

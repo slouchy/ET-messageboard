@@ -124,6 +124,7 @@
     <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\vue.js" />
     <Content Include="Scripts\vue.min.js" />
+    <Content Include="UserIcon\UserIcon_9.jpg" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -175,6 +176,7 @@
     <Compile Include="Tools\DBTool.cs" />
     <Compile Include="Tools\LogTool.cs" />
     <Compile Include="Tools\PBTool.cs" />
+    <Compile Include="Tools\PicTool.cs" />
     <Compile Include="Tools\UserTool.cs" />
   </ItemGroup>
   <ItemGroup>
