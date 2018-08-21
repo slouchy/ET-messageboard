@@ -10,17 +10,88 @@
     <title>留言板-檢視留言</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <link rel="stylesheet" href="~/content/bootstrapCorrect.min.css" />
+    <link rel="stylesheet" href="~/content/List.min.css" />
 </head>
 <body>
-    <div>
-        List
+    <div id="main" class="container">
+        <button type="button" class="btn btn-primary">建立新留言</button>
+        <ul class="message-list">
+            <li v-for="(item, iItems) in items" class="message-list-item">
+                <div class="row row-title border-bottom">
+                    <div class="col col-sm-2">
+                        <img src="https://placem.at/place?w=100&h=100" alt="使用者頭像" />
+                    </div>
+                    <div class="col col-sm-8 ">
+                        {{item.userName}}{{item.order}}<br />
+                        連線 IP：{{item.ip}}<br />
+                        {{item.createDate}}<br />
+                        # {{iItems+1}}
+                    </div>
+                    <div class="col col-sm-2 text-right">
+                        <button v-show="item.isShowDelete" type="button" class="btn btn-danger btn-sm">刪除</button>
+                        <button v-show="item.isShowEdit" type="button" class="btn btn-primary btn-sm">編輯</button>
+                        <button type="button" class="btn btn-info btn-sm">回覆</button><br />
+                    </div>
+                </div>
+                <div class="row row-content">
+                    <div class="col col-sm-1"></div>
+                    <div class="col col-sm-11 text-center">留言內容</div>
+                </div>
+                <div class="row row-footer">
+                    <div class="col col-sm-12 text-center">
+                        | <button class="btn btn-sm btn-light" v-on:click="ToggleReply" data-show="0">收合留言({{replyItems[item.order]}})</button>
+                        | <div class="dropdown" v-show="false">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                排序方式
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#">由舊到新</a>
+                                <a class="dropdown-item" href="#">由新到舊</a>
+                            </div>
+                            |
+                        </div>
+                    </div>
+                </div>
+                <div class="row row-replay">
+                    <div class="col col-sm-1"></div>
+                    <div class="col col-sm-11 text-center">
+                        <ul class="message-list-item-reply">
+                            <li v-for="(reply, iReply) in replyItems[item.order]" class="message-list-item-reply-item">
+                                <div class="row row-title border-reply-bottom">
+                                    <div class="col col-sm-3">
+                                        <img src="https://placem.at/place?w=100&h=100" alt="使用者頭像" />
+                                    </div>
+                                    <div class="col col-sm-7 text-left">
+                                        使用者名稱<br />
+                                        連線 IP：111.111.111.111<br />
+                                        2018/08/21 15:31<br />
+                                        #{{iReply+1}}
+                                    </div>
+                                    <div class="col col-sm-2 text-right">
+                                        <button type="button" class="btn btn-danger btn-sm">刪除</button><br />
+                                        <button type="button" class="btn btn-primary btn-sm">編輯</button><br />
+                                        <button type="button" class="btn btn-info btn-sm">回覆</button><br />
+                                    </div>
+                                </div>
+                                <div class="row row-content">
+                                    <div class="col col-sm-1"></div>
+                                    <div class="col col-sm-11 text-center">回復內容</div>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="col col-sm-1"></div>
+                </div>
+            </li>
+        </ul>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="~/Scripts/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="~/Scripts/List.js"></script>
 </body>
 </html>

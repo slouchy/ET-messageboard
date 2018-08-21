@@ -106,7 +106,14 @@
     <Content Include="content\bootstrapCorrect.min.css">
       <DependentUpon>bootstrapCorrect.css</DependentUpon>
     </Content>
+    <Content Include="content\List.css">
+      <DependentUpon>List.less</DependentUpon>
+    </Content>
+    <Content Include="content\List.min.css">
+      <DependentUpon>List.css</DependentUpon>
+    </Content>
     <Content Include="Global.asax" />
+    <Content Include="content\List.less" />
     <None Include="Log\.gitKeep" />
     <Content Include="Models\MessageBoardsModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -120,6 +127,7 @@
     </Content>
     <Content Include="Scripts\FieldCheck.js" />
     <Content Include="Scripts\FileCheck.js" />
+    <Content Include="Scripts\List.js" />
     <Content Include="Scripts\Login.js" />
     <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\vue.js" />

@@ -1,0 +1,55 @@
+﻿@import "bootstrapCorrect.less";
+
+.ReplyContent(@bgColor) {
+    .message-list-item-reply-item {
+        background-color: darken(@bgColor,5%);
+    }
+}
+
+body {
+    ul, li {
+        list-style: none;
+    }
+
+    .dropdown {
+        display: inline-block;
+    }
+
+    .btn {
+        margin: 2px 0px;
+    }
+
+    .border-reply-bottom {
+        border-bottom: 1px dotted #ccc !important;
+    }
+
+    .row {
+        margin: 0px;
+    }
+
+    .message-list-item {
+        margin: 5px 0px;
+        padding: 5px;
+        border-radius: 5px;
+        width: 100%;
+
+        .row-content {
+            margin-bottom: 10px;
+        }
+
+        .message-list-item-reply-item {
+            margin: 5px 0px;
+            border: 1px solid #dcdcdc;
+        }
+
+        &:nth-child(even) {
+            background-color: #eef1f8;
+            .ReplyContent(#eef1f8);
+        }
+
+        &:nth-child(odd) {
+            background-color: #e3f5f1;
+            .ReplyContent(#e3f5f1);
+        }
+    }
+}

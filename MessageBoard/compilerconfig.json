@@ -2,5 +2,9 @@
   {
     "outputFile": "content/bootstrapCorrect.css",
     "inputFile": "content/bootstrapCorrect.less"
+  },
+  {
+    "outputFile": "content/List.css",
+    "inputFile": "content/List.less"
   }
 ]
