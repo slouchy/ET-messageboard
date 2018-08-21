@@ -119,6 +119,7 @@
       <LastGenOutput>MessageBoardsModel.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\FieldCheck.js" />
+    <Content Include="Scripts\FileCheck.js" />
     <Content Include="Scripts\Login.js" />
     <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\vue.js" />
@@ -196,6 +197,7 @@
     <Content Include="Views\Login\Index.cshtml" />
     <Content Include="Views\Register\Index.cshtml" />
     <Content Include="Views\ForgetPW\Index.cshtml" />
+    <Content Include="UserIcon\.gitKeep" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

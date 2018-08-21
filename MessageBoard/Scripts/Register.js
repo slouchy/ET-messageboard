@@ -2,7 +2,7 @@
 
 let ajaxTimeout = null;
 $(function () {
-    $("input[type='text'], input[type='password'], input[type='email']").popover({
+    $("input[type='text'], input[type='password'], input[type='email'], input[type='file']").popover({
         template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
         placement: "right",
         trigger: "manual",
@@ -15,9 +15,11 @@ let app = new Vue({
     data: {
         isEnabledSubmit: true,
         isEmailOK: false,
+        isFileOK: false,
         isPWOK: false,
         isUserOK: false,
         isRegisterOK: false,
+        file: "",
         pw1: "",
         pw2: "",
         userAccount: "",
@@ -97,7 +99,16 @@ let app = new Vue({
             SetPopover(this, $(".user-pw"), errorMsg !== "", errorMsg);
         },
         isFieldOK() {
-            return this.isPWOK && this.isEmailOK && this.isUserOK;
+            return this.isPWOK && this.isEmailOK && this.isUserOK && this.isFileOK;
+        },
+        UserIconEvt(evt) {
+            let fileCheck = isFileAllow(evt.target.id, 1, /(jpg|gif|png|bmp|jpeg|jpg2000|svg)$/i);
+            this.isFileOK = fileCheck;
+            if (this.isFileOK) {
+                this.file = this.$refs.file.files[0];
+            }           
+
+            SetPopover(this, $(evt.target), !fileCheck, "檔案檢驗失敗");
         },
         UserRegister(evt) {
             let _this = this;
@@ -110,14 +121,18 @@ let app = new Vue({
                 evt.preventDefault();
             } else {
                 setTimeout(() => {
+                    let formData = new FormData();
                     $(evt.target).focus();
                     $(".user-info").prop("disabled", true);
-                    axios.post("Register/UserRegister", {
-                        userAccount: encodeURI(this.userAccount),
-                        userPW1: encodeURI(this.pw1),
-                        userPW2: encodeURI(this.pw2),
-                        userEmail: encodeURI(this.userEmail)
-                    })
+
+
+                    formData.append("userAccount", encodeURI(this.userAccount));
+                    formData.append("userPW1", encodeURI(this.pw1));
+                    formData.append("userPW2", encodeURI(this.pw2));
+                    formData.append("userEmail", encodeURI(this.userEmail));
+                    formData.append("userIcon", this.file);
+
+                    axios.post("Register/UserRegister", formData)
                         .then((result) => {
                             $("#dgRegister").modal({
                                 keyboard: false

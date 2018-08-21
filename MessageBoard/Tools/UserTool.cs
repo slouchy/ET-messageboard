@@ -51,23 +51,25 @@ namespace MessageBoard.Tools
         /// <para>Item1(bool) 註冊結果</para>
         /// <para>Item2(List<stirng>) 錯誤代碼</para>
         /// <para>Item3(string) 相關訊息</para>
+        /// <para>Item4(UserList) 使用者資訊</para>
         /// </summary>
         /// <param name="userAccount">使用者名稱</param>
         /// <param name="userPw1">使用者密碼</param>
         /// <param name="userPw2">使用者密碼</param>
         /// <param name="email">Email</param>
         /// <returns></returns>
-        public Tuple<bool, List<string>, string> RegisterUser(string userAccount, string userPw1, string userPw2, string email)
+        public Tuple<bool, List<string>, string, UserList> RegisterUser(string userAccount, string userPw1, string userPw2, string email)
         {
             bool result = false;
             List<string> errorList = GetFieldCheckError(userAccount, userPw1, userPw2, email);
             string msg = "註冊失敗";
+            UserList userList = new UserList();
 
             if (!errorList.Any())
             {
                 try
                 {
-                    UserList userList = new UserList
+                    userList = new UserList
                     {
                         CreateDate = DateTime.Now,
                         CreateIP = PBTool.GetIP(),
@@ -89,7 +91,7 @@ namespace MessageBoard.Tools
                     LogTool.DoErrorLog($"{err.Message}\r\n{err.StackTrace}");
                 }
             }
-            return Tuple.Create(result, errorList, msg);
+            return Tuple.Create(result, errorList, msg, userList);
         }
 
         /// <summary>

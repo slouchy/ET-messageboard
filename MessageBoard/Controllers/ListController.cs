@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace MessageBoard.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class ListController : Controller
     {
         // GET: List
