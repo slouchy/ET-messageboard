@@ -61,7 +61,7 @@ namespace MessageBoard.Tools
 
                 if (File.Exists(tmpFilePath))
                 {
-                    File.Delete(HttpContext.Current.Server.MapPath(tmpFilePath));
+                    File.Delete(tmpFilePath);
                 }
                 GC.Collect();
             }
