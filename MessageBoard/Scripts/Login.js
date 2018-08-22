@@ -1,7 +1,7 @@
 ﻿$(function () {
     $("#dgLoginFail").modal();
     $("input[type='text'], input[type='password']").popover({
-        template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
+        template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger arrow-right"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
         placement: "right",
         trigger: "manual"
     });

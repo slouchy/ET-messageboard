@@ -1,9 +1,15 @@
-﻿body .arrow-danger::after {
+﻿body .arrow-danger.arrow-right::after {
   border-right-color: #dc3545 !important;
+}
+body .arrow-danger.arrow-bottom::after {
+  border-bottom-color: #dc3545 !important;
 }
 body .popover-content {
   margin: 0px auto;
   padding: 0px 10px;
   margin-bottom: 0;
   list-style: decimal;
+}
+body textarea {
+  resize: none;
 }

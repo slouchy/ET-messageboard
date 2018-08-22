@@ -1,7 +1,15 @@
 ﻿body {
     .arrow-danger {
-        &::after {
-            border-right-color: #dc3545 !important;
+        &.arrow-right {
+            &::after {
+                border-right-color: #dc3545 !important;
+            }
+        }
+
+        &.arrow-bottom {
+            &::after {
+                border-bottom-color: #dc3545 !important;
+            }
         }
     }
 
@@ -10,5 +18,9 @@
         padding: 0px 10px;
         margin-bottom: 0;
         list-style: decimal;
+    }
+
+    textarea {
+        resize: none;
     }
 }
