@@ -40,7 +40,8 @@ let app = new Vue({
                 this.isFileOK = fileCheck;
             }
 
-            SetPopover(this, $(evt.target), !this.isFileOK, "檔案檢驗失敗");
+            SetPopover($(evt.target), !this.isFileOK, "檔案檢驗失敗");
+            this.isEnabledSubmit = this.isFieldOK();
         },
         CheckUserEmail(evt) {
             let $this = $(evt.target);
@@ -56,13 +57,15 @@ let app = new Vue({
                     axios.get(`Register/CheckUserEmail/?userEmail=${encodeURI($this.val())}`)
                         .then((result) => {
                             _this.isEmailOK = result.data.isOK;
-                            SetPopover(this, $this, !result.data.isOK, "使用者信箱已經存在");
+                            SetPopover($this, !result.data.isOK, "使用者信箱已經存在");
+                            this.isEnabledSubmit = this.isFieldOK();
                         })
                         .catch((msg) => { console.error(msg); });
                 }, 300);
             }
 
-            SetPopover(this, $this, errorMsg !== "", errorMsg);
+            SetPopover($this, errorMsg !== "", errorMsg);
+            this.isEnabledSubmit = this.isFieldOK();
         },
         CheckUserAccount(evt) {
             let $this = $(evt.target);
@@ -76,13 +79,15 @@ let app = new Vue({
                         axios.get(`Register/CheckUserExist/?userAccount=${encodeURI($this.val())}`)
                             .then((result) => {
                                 _this.isUserOK = result.data.isOK;
-                                SetPopover(_this, $this, !result.data.isOK, "使用者帳號已經存在");
+                                SetPopover($this, !result.data.isOK, "使用者帳號已經存在");
+                                _this.isEnabledSubmit = this.isFieldOK();
                             })
                             .catch((msg) => { console.error(msg); });
                     }
                 }, 300);
             } else {
-                SetPopover(this, $this, !userCheck.result, userCheck.msg);
+                SetPopover($this, !userCheck.result, userCheck.msg);
+                _this.isEnabledSubmit = this.isFieldOK();
             }
         },
         CheckUserPw(evt) {
@@ -91,7 +96,7 @@ let app = new Vue({
 
             this.isPWOK = true;
             if (!isPwSyntaxOK($this.val())) {
-                errorMsg += "<li>密碼檢驗失敗</li>";
+                errorMsg += "<li>密碼不符合規則</li>";
                 this.isPWOK = false;
             }
 
@@ -105,7 +110,8 @@ let app = new Vue({
                 errorMsg = "";
             }
 
-            SetPopover(this, $(".user-pw"), errorMsg !== "", errorMsg);
+            SetPopover( $(".user-pw"), errorMsg !== "", errorMsg);
+            this.isEnabledSubmit = this.isFieldOK();
         },
         isFieldOK() {
             return this.isPWOK && this.isEmailOK && this.isUserOK && this.isFileOK;

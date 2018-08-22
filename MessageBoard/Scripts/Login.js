@@ -19,7 +19,8 @@ let vueApp = new Vue({
             let $this = $(evt.target);
             let userCheck = GetUserAccountOK($this.val());
 
-            SetPopover(this, $this, !userCheck.result, userCheck.msg);
+            SetPopover($this, !userCheck.result, userCheck.msg);
+            this.isEnabledSubmit = this.isFieldOK();
             if (userCheck.result) {
                 this.isUserOK = true;
             }
@@ -30,11 +31,12 @@ let vueApp = new Vue({
 
             this.isPWOK = true;
             if (!isPwSyntaxOK($this.val())) {
-                errorMsg = "密碼檢驗失敗";
+                errorMsg = "密碼不符合規則";
                 this.isPWOK = false;
             }
 
-            SetPopover(this, $this, errorMsg !== "", errorMsg);
+            SetPopover($this, errorMsg !== "", errorMsg);
+            this.isEnabledSubmit = this.isFieldOK();
         },
         isFieldOK() {
             return this.isPWOK && this.isUserOK;

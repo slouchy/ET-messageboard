@@ -24,11 +24,7 @@ let isEmailSyntaxOK = (email) => {
     return regEmailAddress.test(email);
 };
 
-let SetPopover = (that, $popover, isShowMsg, errorMsg) => {
+let SetPopover = ($popover, isShowMsg, errorMsg) => {
     $popover.attr("data-content", errorMsg);
     $popover.popover(isShowMsg ? "show" : "hide");
-    that.isEnabledSubmit = false;
-    if (that.isFieldOK()) {
-        that.isEnabledSubmit = true;
-    }
 };
