@@ -13,6 +13,57 @@ $(function () {
     });
 });
 
+let replyCountTemplate = Vue.component("vue-replycount", {
+    template: "#replyCount-template",
+    data: function () {
+        return {
+            showTxt: "展開留言",
+            hideTxt: "隱藏留言",
+            isShowReply: false,
+            isLoading: false,
+            replys: []
+        };
+    },
+    props: ["total", "majorid"],
+    methods: {
+        ToggleReply(evt) {
+            this.isLoading = true;
+            this.isShowReply = !this.isShowReply;
+            $(evt.target).nextAll(".replays").slideToggle();
+
+            if (this.isShowReply) {
+                axios.get(`data/reply.json`)
+                    .then((result) => {
+                        // ToDo 2018.08.22 測試使用，串完資料後不需要 filter
+                        let showReplys = result.data.filter((reply, i) => {
+                            return i < this.total;
+                        });
+
+                        this.replys = showReplys;
+                        this.isLoading = false;
+                    });
+            } else {
+                this.isLoading = false;
+            }
+        }
+    }
+});
+
+let contentTemplate = Vue.component("vue-content", {
+    template: "#content-template",
+    props: ["message"]
+});
+
+let userinfoTemplate = Vue.component("vue-userinfo", {
+    template: "#userinfo-template",
+    props: ["userinfo"]
+});
+
+let messageTemplate = Vue.component("vue-message", {
+    template: "#message-template",
+    props: ["message"]
+});
+
 let App = new Vue({
     el: "#main",
     data: {
@@ -23,7 +74,7 @@ let App = new Vue({
         isHasMessage: false,
         isOutOverMaxContent: false,
         isFileOK: false,
-        items: [],
+        messages: [],
         replyItems: [Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5),
         Math.ceil(Math.random() * 20), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5)]
     },
@@ -31,7 +82,7 @@ let App = new Vue({
         let _this = this;
         $.get("data/messageList.json")
             .then((result) => {
-                _this.items = result;
+                _this.messages = result;
             })
             .catch((msg) => { console.log(msg); });
     },

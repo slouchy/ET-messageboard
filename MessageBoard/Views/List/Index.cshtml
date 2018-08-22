@@ -18,73 +18,9 @@
         <button type="button" class="btn btn-primary" v-on:click="OpenCreateMessage(0)">建立新留言</button> |
         @Html.ActionLink("TEST 登入", "Index", "Login", null, new { @class = "btn btn-light" }) |
         <ul class="message-list">
-            <li v-for="(item, iItems) in items" class="message-list-item">
-                <div class="row row-title border-bottom">
-                    <div class="col col-sm-2">
-                        <img src="https://placem.at/place?w=100&h=100" alt="使用者頭像" />
-                    </div>
-                    <div class="col col-sm-8 ">
-                        {{item.userName}}{{item.order}}<br />
-                        連線 IP：{{item.ip}}<br />
-                        {{item.createDate}}<br />
-                        # {{iItems+1}}
-                    </div>
-                    <div class="col col-sm-2 text-right">
-                        <button v-show="item.isShowDelete" type="button" class="btn btn-danger btn-sm">刪除</button>
-                        <button v-show="item.isShowEdit" type="button" class="btn btn-primary btn-sm" v-on:click="OpenEditMessage(item.MessageID)">編輯</button>
-                        <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage(item.MajorID)">回覆</button><br />
-                    </div>
-                </div>
-                <div class="row row-content">
-                    <div class="col col-sm-1"></div>
-                    <div class="col col-sm-11 text-center">{{item.content}}</div>
-                </div>
-                <div class="row row-footer">
-                    <div class="col col-sm-12 text-center">
-                        | <button class="btn btn-sm btn-light" v-on:click="ToggleReply" data-show="0">收合留言({{replyItems[item.order]}})</button>
-                        | <div class="dropdown" v-show="false">
-                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                排序方式
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" href="#">由舊到新</a>
-                                <a class="dropdown-item" href="#">由新到舊</a>
-                            </div>
-                            |
-                        </div>
-                    </div>
-                </div>
-                <div class="row row-replay">
-                    <div class="col col-sm-1"></div>
-                    <div class="col col-sm-11 text-center">
-                        <ul class="message-list-item-reply">
-                            <li v-for="(reply, iReply) in replyItems[item.order]" class="message-list-item-reply-item">
-                                <div class="row row-title border-reply-bottom">
-                                    <div class="col col-sm-3">
-                                        <img src="https://placem.at/place?w=100&h=100" alt="使用者頭像" />
-                                    </div>
-                                    <div class="col col-sm-7 text-left">
-                                        使用者名稱<br />
-                                        連線 IP：111.111.111.111<br />
-                                        2018/08/21 15:31<br />
-                                        #{{iReply+1}}
-                                    </div>
-                                    <div class="col col-sm-2 text-right">
-                                        <button type="button" class="btn btn-danger btn-sm">刪除</button><br />
-                                        <button type="button" class="btn btn-primary btn-sm">編輯</button><br />
-                                        <button type="button" class="btn btn-info btn-sm">回覆</button><br />
-                                    </div>
-                                </div>
-                                <div class="row row-content">
-                                    <div class="col col-sm-1"></div>
-                                    <div class="col col-sm-11 text-center">回復內容</div>
-                                </div>
-                            </li>
-                        </ul>
-
-                    </div>
-                    <div class="col col-sm-1"></div>
-                </div>
+            <li v-for="message in messages" class="message-list-item">
+                <vue-message :message="message"></vue-message>
+                <vue-replycount :total="message.replyCount" :majorID="message.MajorID"></vue-replycount>
             </li>
         </ul>
 
@@ -111,7 +47,7 @@
                         <div class="row">
                             <div class="col col-sm-3 text-left font-weight-bold">上傳圖片</div>
                             <div class="col col-sm-9 text-left">
-                                <input type="file" name="messagePic" id="messagePic" ref="file" class="form-control user-info"  v-on:change="CheckPics"/>
+                                <input type="file" name="messagePic" id="messagePic" ref="file" class="form-control user-info" v-on:change="CheckPics" />
                             </div>
                         </div>
                     </div>
@@ -126,6 +62,49 @@
             </div>
         </div>
     </div>
+
+    <template id="replyCount-template">
+        <div class="row row-footer">
+            <div class="col col-sm-11 text-center">
+                <div class="loading" v-if="isLoading">Loading...</div>
+                <button class="btn btn-sm btn-light" data-show="1" :data-id="majorid" v-on:click="ToggleReply">{{isShowReply? hideTxt:showTxt}}({{total}})</button>
+                <br />
+                <div v-if="total === 0" class="replays">目前沒有資料</div>
+                <ul v-if="total !== 0" class="replays message-list">
+                    <li v-for="message in replys" class="message-list-item-reply-item">
+                        <vue-message :message="message"></vue-message>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </template>
+
+    <template id="userinfo-template">
+        <div class="row row-title border-bottom">
+            <div class="col col-sm-3">
+                <img :src="userinfo.userIcon" alt="使用者頭像" />
+            </div>
+            <div class="col col-sm-9 text-left">
+                {{userinfo.userName}}{{userinfo.order}}<br />
+                連線 IP：{{userinfo.ip}}<br />
+                {{userinfo.createDate}}<br />
+            </div>
+        </div>
+    </template>
+
+    <template id="content-template">
+        <div class="row row-content">
+            <div class="col col-sm-1"></div>
+            <div class="col col-sm-11 text-center">{{message.content}}</div>
+        </div>
+    </template>
+
+    <template id="message-template">
+        <li>
+            <vue-userinfo :userinfo="message"></vue-userinfo>
+            <vue-content :message="message"></vue-content>
+        </li>
+    </template>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>

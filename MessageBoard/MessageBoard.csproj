@@ -114,6 +114,7 @@
     </Content>
     <Content Include="Global.asax" />
     <Content Include="content\List.less" />
+    <Content Include="data\reply.json" />
     <None Include="Log\.gitKeep" />
     <Content Include="Models\MessageBoardsModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
