@@ -79,6 +79,42 @@ namespace MessageBoard.Tools
             }
         }
 
+        public static void SaveMessagePic(HttpPostedFileBase httpPostedFile, int userID, int messageID)
+        {
+            try
+            {
+                string fileName = Guid.NewGuid().ToString();
+                string realFileViturePath = $"messagePics/origin/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
+                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}");
+                string realFilePath = HttpContext.Current.Server.MapPath($@"~/{realFileViturePath}");
+
+                httpPostedFile.SaveAs(tmpFilePath);
+                using (Image originImg = Image.FromFile(tmpFilePath))
+                {
+                    using (var formattedImg = GetResizeImage(originImg, 60, 60))
+                    {
+                        formattedImg.Save(realFilePath);
+                    }
+                }
+
+                MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
+                MessagePic messagePic = new MessagePic()
+                {
+                    CreateDate = DateTime.Now,
+                    MessageID = messageID,
+                    CreateUserID = userID,
+                    PicURL = realFileViturePath
+                };
+                messageBoardEntities.SaveChanges();
+                GC.Collect();
+            }
+            catch (Exception err)
+            {
+                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
+            }
+        }
+
+
         /// <summary>
         /// 在圖片四周加入白邊
         /// </summary>

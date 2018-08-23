@@ -109,12 +109,12 @@
             <div class="col col-sm-3 text-right">
                 <img :src="userinfo.userIcon" alt="使用者頭像" />
             </div>
-            <div class="col col-sm-7 text-left">
+            <div class="col col-sm-8 text-left">
                 {{userinfo.userName}}{{userinfo.order}}<br />
                 連線 IP：{{userinfo.ip}}<br />
                 {{userinfo.createDate}}<br />
             </div>
-            <div class="col col-sm-2 text-right">
+            <div class="col col-sm-1 text-right">
                 <button v-show="userinfo.isShowDelete" type="button" class="btn btn-danger btn-sm" data-toggle="confirmation">刪除</button>
                 <button v-show="userinfo.isShowEdit" type="button" class="btn btn-primary btn-sm" v-on:click="OpenEditMessage(userinfo.MessageID);">編輯</button>
                 <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage(userinfo.MajorID)">回覆</button><br />

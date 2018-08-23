@@ -21,11 +21,6 @@ $(function () {
         show: false,
         keyboard: false
     });
-
-    $('[data-toggle=confirmation]').confirmation({
-        rootSelector: '[data-toggle=confirmation]',
-        container: 'body'
-    });
 });
 
 let replyCountTemplate = Vue.component("vue-replycount", {
@@ -163,14 +158,16 @@ let App = new Vue({
                 });
         },
         DeleteMessagePic(evt) {
-            axios.post("List/DeleteMessagePic", {
-                pic: this.editExistID
-            })
-                .then((result) => {
-                    $dgDialog.modal("show");
-                    _this.serverMsg = result.data.isOK;
-                    _this.saveMsg = result.data.msg;
-                });
+            if (confirm("是否要刪除圖片？")) {
+                axios.post("List/DeleteMessagePic", {
+                    pic: this.editExistID
+                })
+                    .then((result) => {
+                        $dgDialog.modal("show");
+                        _this.serverMsg = result.data.isOK;
+                        _this.saveMsg = result.data.msg;
+                    });
+            }
         },
         OpenCreateMessage(majorID) {
             this.SetMajorID(majorID);
@@ -186,21 +183,24 @@ let App = new Vue({
                 evt.preventDefault();
             } else {
                 setTimeout(() => {
+                    let postURL = "";
                     let formData = new FormData();
                     $(evt.target).focus();
                     $(".user-message").prop("disabled", true);
-                    formData.append("majorID", encodeURI(this.editMajorID));
                     formData.append("content", encodeURI(this.messageContent));
                     formData.append("picList", encodeURI(this.file));
 
-                    axios.post("List/AddMessage", formData)
+                    if (this.editMessageID === 0) {
+                        postURL = "List/GetMajorMessage";
+                        formData.append("majorID", this.editMajorID);
+                    } else {
+                        postURL = "List/UpdateMessage";
+                        formData.append("messageID", this.editMessageID);
+                    }
+
+                    $(".user-message").prop("disabled", false);
+                    axios.post(postURL, formData)
                         .then((result) => {
-                            $dgDialog.modal("show");
-                            _this.serverMsg = result.data.isOK;
-                            _this.saveMsg = result.data.msg;
-                            if (!_this.isSaveOK) {
-                                $(".user-message").prop("disabled", false);
-                            }
                         })
                         .catch((msg) => {
                             console.error(msg);

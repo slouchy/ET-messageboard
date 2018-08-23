@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using MessageBoard.Models;
 using Newtonsoft.Json;
+using System.Web.Security;
 
 namespace MessageBoard.Tools
 {
@@ -94,6 +95,18 @@ namespace MessageBoard.Tools
             return Tuple.Create(result, errorList, msg, userList);
         }
 
+        public IQueryable<UserList> GetLoginedUser(HttpRequestBase httpRequest)
+        {
+            string cookieName = FormsAuthentication.FormsCookieName;
+            HttpCookie authCookie = httpRequest.Cookies[cookieName];
+            FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
+            string userName = ticket.Name;
+
+            var userData = messageBoardEntities.UserList
+                .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+            return userData;
+        }
+
         /// <summary>
         /// 檢查 Email 是否不存在
         /// </summary>
@@ -105,7 +118,6 @@ namespace MessageBoard.Tools
                 .Where(r => r.UserEmail.Equals(email, StringComparison.CurrentCultureIgnoreCase))
                 .Any();
         }
-
 
         /// <summary>
         /// 檢查使用者是否不存在
