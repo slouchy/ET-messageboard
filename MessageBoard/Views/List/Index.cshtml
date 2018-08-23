@@ -14,12 +14,13 @@
 </head>
 <body>
     <div id="main" class="container">
+        editMessageID: {{editMessageID}}, editMajorID {{editMajorID}}
         |
         <button type="button" class="btn btn-primary" v-on:click="OpenCreateMessage(0)">建立新留言</button> |
         @Html.ActionLink("TEST 登入", "Index", "Login", null, new { @class = "btn btn-light" }) |
         <ul class="message-list">
             <li v-for="message in messages" class="message-list-item">
-                <vue-message :message="message"></vue-message>
+                <vue-message :message="message" v-on:clicked-edit="SetMessageID" v-on:clicked-create-message="SetMajorID"></vue-message>
                 <vue-replycount :total="message.replyCount" :majorID="message.MajorID"></vue-replycount>
             </li>
         </ul>
@@ -40,54 +41,83 @@
                         </div>
                         <div class="row">
                             <div class="col col-sm-12">
-                                <textarea v-bind:class="{'form-control':true, 'is-invalid':isOutOverMaxContent}" id="txtMessage" rows="5" v-model="messageContent" placeholder="請輸入留言內容"></textarea>
+                                <textarea v-bind:class="{'form-control':true,'user-message':true, 'is-invalid':isOutOverMaxContent}" id="txtMessage" rows="5" v-model="messageContent" placeholder="請輸入留言內容"></textarea>
                                 <small v-bind:class="{'form-text':true, 'text-muted':!isOutOverMaxContent,'invalid-feedback':isOutOverMaxContent}">上限 300 字，目前已經輸入 {{messageCount}} 個字</small><br />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col col-sm-3 text-left font-weight-bold">上傳圖片</div>
                             <div class="col col-sm-9 text-left">
-                                <input type="file" name="messagePic" id="messagePic" ref="file" class="form-control user-info" v-on:change="CheckPics" />
+                                <input type="file" name="messagePic" id="messagePic" ref="file" class="form-control user-message" v-on:change="CheckPics" />
+                            </div>
+                        </div>
+                        <div v-if="editMessageID !== 0" class="row">
+                            <div class="col col-sm-3 text-left font-weight-bold"></div>
+                            <div class="col col-sm-9 text-left">
+                                <br />
+                                <ul>
+                                    <li>
+                                        <img src="https://placem.at/place?h=60&w=60" alt="留言圖片" :picid="0" />
+                                        <button type="button" class="btn btn-sm btn-danger" v-on:click="DeleteMessagePic">刪除圖片</button>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <input type="hidden" id="hdMajorID" v-model="editMajorID" />
                         <input type="hidden" id="hdMessageID" v-model="editMessageID" />
-                        <button type="button" class="btn btn-primary" :disabled="isOutOverMaxContent || !isHasMessage || !isFileOK">儲存</button>&nbsp;
+                        <button type="button" class="btn btn-primary" :disabled="!isEnabledSave" v-on:click="SaveMessage">儲存</button>&nbsp;
                         <button type="button" class="btn btn-danger" data-dismiss="modal">關閉</button>
                     </div>
                 </div>
 
             </div>
         </div>
+
+        <div v-show="false" class="modal fade" id="dgDialog" role="dialog" data-backdrop="static">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    {{serverMsg}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" v-on:click="CloseDialog">關閉</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <template id="replyCount-template">
         <div class="row row-footer">
-            <div class="col col-sm-11 text-center">
+            <div class="col col-sm-12 text-center">
                 <div class="loading" v-if="isLoading">Loading...</div>
                 <button class="btn btn-sm btn-light" data-show="1" :data-id="majorid" v-on:click="ToggleReply">{{isShowReply? hideTxt:showTxt}}({{total}})</button>
                 <br />
-                <div v-if="total === 0" class="replays">目前沒有資料</div>
-                <ul v-if="total !== 0" class="replays message-list">
-                    <li v-for="message in replys" class="message-list-item-reply-item">
-                        <vue-message :message="message"></vue-message>
-                    </li>
-                </ul>
+                <div v-if="total === 0" class="replays text-center">目前沒有資料</div>
+                <div v-if="total !== 0" class="text-right">
+                    <ul v-for="message in replys" class=" message-list message-list-reply ">
+                        <vue-message :message="message" v-on:clicked-edit="SetMessageID" v-on:clicked-create-message="SetMajorID"></vue-message>
+                    </ul>
+                </div>
             </div>
         </div>
     </template>
 
     <template id="userinfo-template">
         <div class="row row-title border-bottom">
-            <div class="col col-sm-3">
+            <div class="col col-sm-3 text-right">
                 <img :src="userinfo.userIcon" alt="使用者頭像" />
             </div>
-            <div class="col col-sm-9 text-left">
+            <div class="col col-sm-7 text-left">
                 {{userinfo.userName}}{{userinfo.order}}<br />
                 連線 IP：{{userinfo.ip}}<br />
                 {{userinfo.createDate}}<br />
+            </div>
+            <div class="col col-sm-2 text-right">
+                <button v-show="userinfo.isShowDelete" type="button" class="btn btn-danger btn-sm" data-toggle="confirmation">刪除</button>
+                <button v-show="userinfo.isShowEdit" type="button" class="btn btn-primary btn-sm" v-on:click="OpenEditMessage(userinfo.MessageID);">編輯</button>
+                <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage(userinfo.MajorID)">回覆</button><br />
             </div>
         </div>
     </template>
@@ -101,7 +131,7 @@
 
     <template id="message-template">
         <li>
-            <vue-userinfo :userinfo="message"></vue-userinfo>
+            <vue-userinfo :userinfo="message" v-on:clicked-edit="SetMessageID" v-on:clicked-create-message="SetMajorID"></vue-userinfo>
             <vue-content :message="message"></vue-content>
         </li>
     </template>

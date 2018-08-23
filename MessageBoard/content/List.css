@@ -55,12 +55,12 @@ body .message-list-item .message-list-item-reply-item {
 body .message-list-item:nth-child(even) {
   background-color: #eef1f8;
 }
-body .message-list-item:nth-child(even) .message-list-item-reply-item {
+body .message-list-item:nth-child(even) .message-list-reply {
   background-color: #dce2f1;
 }
 body .message-list-item:nth-child(odd) {
   background-color: #e3f5f1;
 }
-body .message-list-item:nth-child(odd) .message-list-item-reply-item {
+body .message-list-item:nth-child(odd) .message-list-reply {
   background-color: #d0eee8;
 }

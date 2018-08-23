@@ -1,4 +1,9 @@
-﻿let $dgMessage;
+﻿// VUE NOTE： 
+//      ● component 在父子間傳遞資料，使用駝峰式命名會傳遞失敗
+//      ● component 需要先被定義才能使用
+
+let $dgMessage;
+let $dgDialog;
 $(function () {
     $("input[type='text'], input[type='password'], input[type='email'], input[type='file']").popover({
         template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger arrow-bottom"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
@@ -7,9 +12,19 @@ $(function () {
         html: true
     });
     $dgMessage = $("#dgMessage");
+    $dgDialog = $("#dgDialog");
     $dgMessage.modal({
         show: false,
         keyboard: false
+    });
+    $dgDialog.modal({
+        show: false,
+        keyboard: false
+    });
+
+    $('[data-toggle=confirmation]').confirmation({
+        rootSelector: '[data-toggle=confirmation]',
+        container: 'body'
     });
 });
 
@@ -26,6 +41,12 @@ let replyCountTemplate = Vue.component("vue-replycount", {
     },
     props: ["total", "majorid"],
     methods: {
+        SetMajorID(id) {
+            this.$emit("clicked-create-message", id);
+        },
+        SetMessageID(id) {
+            this.$emit("clicked-edit", id);
+        },
         ToggleReply(evt) {
             this.isLoading = true;
             this.isShowReply = !this.isShowReply;
@@ -56,12 +77,31 @@ let contentTemplate = Vue.component("vue-content", {
 
 let userinfoTemplate = Vue.component("vue-userinfo", {
     template: "#userinfo-template",
-    props: ["userinfo"]
+    props: ["userinfo"],
+    methods: {
+        DeleteMessage(messageID) {
+
+        },
+        OpenCreateMessage(majorID) {
+            this.$emit("clicked-create-message", majorID);
+        },
+        OpenEditMessage(messageID) {
+            this.$emit("clicked-edit", messageID);
+        }
+    }
 });
 
 let messageTemplate = Vue.component("vue-message", {
     template: "#message-template",
-    props: ["message"]
+    props: ["message"],
+    methods: {
+        SetMajorID(id) {
+            this.$emit("clicked-create-message", id);
+        },
+        SetMessageID(id) {
+            this.$emit("clicked-edit", id);
+        }
+    }
 });
 
 let App = new Vue({
@@ -69,12 +109,15 @@ let App = new Vue({
     data: {
         editMajorID: 0,
         editMessageID: 0,
+        editExistID: 0,
         file: "",
-        messageContent: "",
+        isFileOK: true,
         isHasMessage: false,
         isOutOverMaxContent: false,
-        isFileOK: false,
+        isSaveOK: false,
+        messageContent: "",
         messages: [],
+        serverMsg: "",
         replyItems: [Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5),
         Math.ceil(Math.random() * 20), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5)]
     },
@@ -87,30 +130,93 @@ let App = new Vue({
             .catch((msg) => { console.log(msg); });
     },
     methods: {
+        CheckPics(evt) {
+            let fileCheck = isFileAllow(evt.target.id, 1, /(jpg|gif|png|bmp|jpeg|jpg2000|svg)$/i);
+
+            this.isFileOK = fileCheck;
+            if (fileCheck && $(evt.target).val().length > 0) {
+                this.file = this.$refs.file.files[0];
+            }
+
+            SetPopover($(evt.target), !this.isFileOK, "檔案檢驗失敗");
+        },
         ClearMessage() {
+            this.editExistID = 0;
             this.editMajorID = 0;
             this.editMessageID = 0;
             this.file = "";
             this.messageContent = "";
         },
-        CheckPics(evt) {
-            let fileCheck = isFileAllow(evt.target.id, 1, /(jpg|gif|png|bmp|jpeg|jpg2000|svg)$/i);
-            if (fileCheck && $(evt.target).val().length > 0) {
-                this.file = this.$refs.file.files[0];
-                this.isFileOK = fileCheck;
+        CloseDialog() {
+            if (this.isSaveOK) {
+                window.location.reload();
             }
-
-            SetPopover($(evt.target), !this.isFileOK, "檔案檢驗失敗");
+        },
+        DeleteMessage(evt) {
+            axios.post("List/DeleteMessage", {
+                id: this.editMessageID
+            })
+                .then((result) => {
+                    $dgDialog.modal("show");
+                    _this.serverMsg = result.data.isOK;
+                    _this.saveMsg = result.data.msg;
+                });
+        },
+        DeleteMessagePic(evt) {
+            axios.post("List/DeleteMessagePic", {
+                pic: this.editExistID
+            })
+                .then((result) => {
+                    $dgDialog.modal("show");
+                    _this.serverMsg = result.data.isOK;
+                    _this.saveMsg = result.data.msg;
+                });
         },
         OpenCreateMessage(majorID) {
-            $dgMessage.modal("show");
-            this.ClearMessage();
-            this.editMajorID = majorID;
+            this.SetMajorID(majorID);
         },
-        OpenEditMessage(messageID) {
+        SaveMessage(evt) {
+            let _this = this;
+            $(".user-message").each(function () {
+                $(this).focus();
+            });
+
+            $(evt.target).focus();
+            if (!this.isEnabledSave) {
+                evt.preventDefault();
+            } else {
+                setTimeout(() => {
+                    let formData = new FormData();
+                    $(evt.target).focus();
+                    $(".user-message").prop("disabled", true);
+                    formData.append("majorID", encodeURI(this.editMajorID));
+                    formData.append("content", encodeURI(this.messageContent));
+                    formData.append("picList", encodeURI(this.file));
+
+                    axios.post("List/AddMessage", formData)
+                        .then((result) => {
+                            $dgDialog.modal("show");
+                            _this.serverMsg = result.data.isOK;
+                            _this.saveMsg = result.data.msg;
+                            if (!_this.isSaveOK) {
+                                $(".user-message").prop("disabled", false);
+                            }
+                        })
+                        .catch((msg) => {
+                            console.error(msg);
+                        });
+                }, 300);
+            }
+        },
+        SetMajorID(id) {
             $dgMessage.modal("show");
             this.ClearMessage();
-            this.editMessageID = messageID;
+            this.editMajorID = id;
+        },
+        SetMessageID(id) {
+            $dgMessage.modal("show");
+            this.ClearMessage();
+            this.editMessageID = id;
         },
         ToggleReply(evt) {
             let $this = $(evt.target);
@@ -140,6 +246,9 @@ let App = new Vue({
                 this.isOutOverMaxContent = false;
             }
             return this.messageContent.length;
+        },
+        isEnabledSave() {
+            return !this.isOutOverMaxContent && this.isHasMessage && this.isFileOK;
         }
     }
 });
