@@ -32,6 +32,7 @@ namespace MessageBoard.Models
         public bool UserStatus { get; set; }
         public string CreateIP { get; set; }
         public System.DateTime CreateDate { get; set; }
+        public string UserIcon { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MajorMessageList> MajorMessageList { get; set; }

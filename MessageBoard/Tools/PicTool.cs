@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageBoard.Models;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -12,6 +13,8 @@ namespace MessageBoard.Tools
 {
     public class PicTool
     {
+
+
         /// <summary>
         /// 檢查檔案大小
         /// </summary>
@@ -38,13 +41,14 @@ namespace MessageBoard.Tools
         /// 儲存使用者圖示
         /// </summary>
         /// <param name="httpPostedFile">傳遞的檔案</param>
-        /// <param name="fileName">儲存檔案名稱</param>
-        public static void SaveUserPic(HttpPostedFileBase httpPostedFile, string fileName)
+        /// <param name="userID">儲存檔案名稱</param>
+        public static void SaveUserPic(HttpPostedFileBase httpPostedFile, int userID)
         {
             try
             {
-                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/2_{fileName}");
-                string realFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/{fileName}");
+                string realFileViturePath = $"UserIcon/UserIcon_{userID}{Path.GetExtension(httpPostedFile.FileName)}";
+                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/2_UserIcon{userID}{Path.GetExtension(httpPostedFile.FileName)}");
+                string realFilePath = HttpContext.Current.Server.MapPath($@"~/{realFileViturePath}");
                 if (File.Exists(tmpFilePath))
                 {
                     File.Delete(HttpContext.Current.Server.MapPath(tmpFilePath));
@@ -62,6 +66,10 @@ namespace MessageBoard.Tools
                 if (File.Exists(tmpFilePath))
                 {
                     File.Delete(tmpFilePath);
+                    MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
+                    var user = messageBoardEntities.UserList.Find(userID);
+                    user.UserIcon = realFileViturePath;
+                    messageBoardEntities.SaveChanges();
                 }
                 GC.Collect();
             }

@@ -57,6 +57,7 @@
           <Property Name="UserName" Type="nvarchar" MaxLength="20" Nullable="false" />
           <Property Name="UserPW" Type="nvarchar" MaxLength="40" Nullable="false" />
           <Property Name="UserEmail" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="UserIcon" Type="nvarchar" MaxLength="50" />
           <Property Name="UserAccess" Type="int" Nullable="false" />
           <Property Name="UserStatus" Type="bit" Nullable="false" />
           <Property Name="CreateIP" Type="nvarchar" MaxLength="15" Nullable="false" />
@@ -265,6 +266,7 @@
           <NavigationProperty Name="MessagePic" Relationship="Self.FK_MessagePic_UserList" FromRole="UserList" ToRole="MessagePic" />
           <NavigationProperty Name="OperateLog" Relationship="Self.FK_OperateLog_UserList" FromRole="UserList" ToRole="OperateLog" />
           <NavigationProperty Name="UserLog" Relationship="Self.FK_UserLog_UserList" FromRole="UserList" ToRole="UserLog" />
+          <Property Name="UserIcon" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="UserLog">
           <Key>
@@ -454,6 +456,7 @@
           <EntitySetMapping Name="UserList">
             <EntityTypeMapping TypeName="MessageBoardModel.UserList">
               <MappingFragment StoreEntitySet="UserList">
+                <ScalarProperty Name="UserIcon" ColumnName="UserIcon" />
                 <ScalarProperty Name="UserID" ColumnName="UserID" />
                 <ScalarProperty Name="UserName" ColumnName="UserName" />
                 <ScalarProperty Name="UserPW" ColumnName="UserPW" />

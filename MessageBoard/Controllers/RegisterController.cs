@@ -97,7 +97,7 @@ namespace MessageBoard.Controllers
 
                 if (registerResult.Item1)
                 {
-                    PicTool.SaveUserPic(postFile, $"UserIcon_{registerResult.Item4.UserID}{Path.GetExtension(postFile.FileName)}");
+                    PicTool.SaveUserPic(postFile, registerResult.Item4.UserID);
                 }
             }
 
