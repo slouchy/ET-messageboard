@@ -33,7 +33,7 @@
           </Key>
           <Property Name="PicID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MessageID" Type="int" Nullable="false" />
-          <Property Name="PicURL" Type="int" Nullable="false" />
+          <Property Name="PicURL" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="CreateDate" Type="datetime" Nullable="false" />
           <Property Name="CreateUserID" Type="int" Nullable="false" />
         </EntityType>
@@ -230,7 +230,7 @@
           </Key>
           <Property Name="PicID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MessageID" Type="Int32" Nullable="false" />
-          <Property Name="PicURL" Type="Int32" Nullable="false" />
+          <Property Name="PicURL" Type="String" Nullable="false" />
           <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="CreateUserID" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Message" Relationship="Self.FK_MessagePic_Message" FromRole="MessagePic" ToRole="Message" />

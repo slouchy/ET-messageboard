@@ -16,7 +16,7 @@ namespace MessageBoard.Models
     {
         public int PicID { get; set; }
         public int MessageID { get; set; }
-        public int PicURL { get; set; }
+        public string PicURL { get; set; }
         public System.DateTime CreateDate { get; set; }
         public int CreateUserID { get; set; }
     
