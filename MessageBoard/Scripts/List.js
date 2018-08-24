@@ -23,6 +23,10 @@ $(function () {
     });
 });
 
+let GetDatetimeFormatted = (orignDatetime) => {
+    return moment(orignDatetime).format("YYYY-MM-DD HH:mm");
+};
+
 let replyCountTemplate = Vue.component("vue-replycount", {
     template: "#replyCount-template",
     data: function () {
@@ -36,11 +40,14 @@ let replyCountTemplate = Vue.component("vue-replycount", {
     },
     props: ["total", "majorid"],
     methods: {
-        SetMajorID(id) {
-            this.$emit("clicked-create-message", id);
+        DeleteMessage(id) {
+            this.$emit("clicked-delete-message", id);
         },
-        SetMessageID(id) {
+        EditMessage(id) {
             this.$emit("clicked-edit", id);
+        },
+        ReplyMessage(id) {
+            this.$emit("clicked-create-message", id);
         },
         ToggleReply(evt) {
             this.isLoading = true;
@@ -48,14 +55,14 @@ let replyCountTemplate = Vue.component("vue-replycount", {
             $(evt.target).nextAll(".replays").slideToggle();
 
             if (this.isShowReply) {
-                axios.get(`data/reply.json`)
+                axios.get(`list/GetMessageList/?majorID=${this.majorid}`)
                     .then((result) => {
                         // ToDo 2018.08.22 測試使用，串完資料後不需要 filter
-                        let showReplys = result.data.filter((reply, i) => {
-                            return i < this.total;
-                        });
+                        //let showReplys = result.data.filter((reply, i) => {
+                        //    return i < this.total;
+                        //});
 
-                        this.replys = showReplys;
+                        //this.replys = showReplys;
                         this.isLoading = false;
                     });
             } else {
@@ -72,29 +79,34 @@ let contentTemplate = Vue.component("vue-content", {
 
 let userinfoTemplate = Vue.component("vue-userinfo", {
     template: "#userinfo-template",
-    props: ["userinfo"],
+    props: ["userinfo", "count"],
     methods: {
-        DeleteMessage(messageID) {
-
+        DeleteMessage() {
+            if (confirm("是否要刪除留言？")) {
+                this.$emit("clicked-delete-message", this.userinfo.MessageID);
+            }
         },
-        OpenCreateMessage(majorID) {
-            this.$emit("clicked-create-message", majorID);
+        OpenCreateMessage() {
+            this.$emit("clicked-create-message", this.userinfo.majorID);
         },
-        OpenEditMessage(messageID) {
-            this.$emit("clicked-edit", messageID);
+        OpenEditMessage() {
+            this.$emit("clicked-edit", this.userinfo.MessageID);
         }
     }
 });
 
 let messageTemplate = Vue.component("vue-message", {
     template: "#message-template",
-    props: ["message"],
+    props: ["message", "count"],
     methods: {
-        SetMajorID(id) {
-            this.$emit("clicked-create-message", id);
+        DeleteMessage(id) {
+            this.$emit("clicked-delete-message", id);
         },
-        SetMessageID(id) {
+        EditMessage(id) {
             this.$emit("clicked-edit", id);
+        },
+        ReplyMessage(id) {
+            this.$emit("clicked-create-message", id);
         }
     }
 });
@@ -118,9 +130,12 @@ let App = new Vue({
     },
     mounted() {
         let _this = this;
-        $.get("data/messageList.json")
+        axios.get("list/GetMajorMessage")
             .then((result) => {
-                _this.messages = result;
+                result.data.forEach((item, i) => {
+                    item.CreateDate = GetDatetimeFormatted(item.CreateDate);
+                });
+                _this.messages = result.data;
             })
             .catch((msg) => { console.log(msg); });
     },
@@ -147,14 +162,23 @@ let App = new Vue({
                 window.location.reload();
             }
         },
-        DeleteMessage(evt) {
+        CreateMessage(id) {
+            $dgMessage.modal("show");
+            this.ClearMessage();
+            this.editMajorID = id;
+        },
+        DeleteMessage(id) {
+            this.editMessageID = id;
             axios.post("List/DeleteMessage", {
-                id: this.editMessageID
+                messageID: this.editMessageID
             })
                 .then((result) => {
                     $dgDialog.modal("show");
-                    _this.serverMsg = result.data.isOK;
-                    _this.saveMsg = result.data.msg;
+                    this.serverMsg = result.data.isOK;
+                    this.saveMsg = "OK";
+                })
+                .catch((msg) => {
+                    console.error(msg);
                 });
         },
         DeleteMessagePic(evt) {
@@ -169,8 +193,19 @@ let App = new Vue({
                     });
             }
         },
+        EditMessage(id) {
+            $dgMessage.modal("show");
+            this.ClearMessage();
+            this.editMessageID = id;
+            if (id !== 0) {
+                axios.get(`list/GetUniqueMessage/?messageID=${id}`)
+                    .then((result) => {
+                        console.log(result);
+                    });
+            }
+        },
         OpenCreateMessage(majorID) {
-            this.SetMajorID(majorID);
+            this.CreateMessage(majorID);
         },
         SaveMessage(evt) {
             let _this = this;
@@ -191,7 +226,7 @@ let App = new Vue({
                     formData.append("picList", encodeURI(this.file));
 
                     if (this.editMessageID === 0) {
-                        postURL = "List/GetMajorMessage";
+                        postURL = "List/AddMessage";
                         formData.append("majorID", this.editMajorID);
                     } else {
                         postURL = "List/UpdateMessage";
@@ -200,23 +235,19 @@ let App = new Vue({
 
                     $(".user-message").prop("disabled", false);
                     axios.post(postURL, formData)
-                        .then((result) => {
+                        .then((response) => {
+                            _this.isSaveOK = response.data.isOK;
+                            _this.serverMsg = response.data.msg;
+                            $dgDialog.modal("show");
+                            if (!_this.isSaveOK) {
+                                $(".user-message").prop("disabled", false);
+                            }
                         })
                         .catch((msg) => {
                             console.error(msg);
                         });
                 }, 300);
             }
-        },
-        SetMajorID(id) {
-            $dgMessage.modal("show");
-            this.ClearMessage();
-            this.editMajorID = id;
-        },
-        SetMessageID(id) {
-            $dgMessage.modal("show");
-            this.ClearMessage();
-            this.editMessageID = id;
         },
         ToggleReply(evt) {
             let $this = $(evt.target);

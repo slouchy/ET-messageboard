@@ -45,6 +45,9 @@ body .message-list-item {
   border-radius: 5px;
   width: 100%;
 }
+body .message-list-item .user-pic {
+  width: 100px;
+}
 body .message-list-item .row-content {
   margin-bottom: 10px;
 }
