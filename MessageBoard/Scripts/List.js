@@ -1,6 +1,7 @@
 ﻿// VUE NOTE： 
 //      ● component 在父子間傳遞資料，使用駝峰式命名會傳遞失敗
 //      ● component 需要先被定義才能使用
+//      ● v-on 事件綁定要注意「;」，不正確會無法綁定
 
 let $dgMessage;
 let $dgDialog;
@@ -90,6 +91,7 @@ let userinfoTemplate = Vue.component("vue-userinfo", {
             this.$emit("clicked-create-message", this.userinfo.majorID);
         },
         OpenEditMessage() {
+            console.log("InEdit");
             this.$emit("clicked-edit", this.userinfo.MessageID);
         }
     }
@@ -117,16 +119,15 @@ let App = new Vue({
         editMajorID: 0,
         editMessageID: 0,
         editExistID: 0,
+        editMessage: null,
         file: "",
         isFileOK: true,
         isHasMessage: false,
         isOutOverMaxContent: false,
-        isSaveOK: false,
         messageContent: "",
         messages: [],
         serverMsg: "",
-        replyItems: [Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5),
-        Math.ceil(Math.random() * 20), Math.ceil(Math.random() * 5), Math.ceil(Math.random() * 5)]
+        serverCode: 0
     },
     mounted() {
         let _this = this;
@@ -151,15 +152,25 @@ let App = new Vue({
             SetPopover($(evt.target), !this.isFileOK, "檔案檢驗失敗");
         },
         ClearMessage() {
-            this.editExistID = 0;
             this.editMajorID = 0;
             this.editMessageID = 0;
             this.file = "";
             this.messageContent = "";
         },
         CloseDialog() {
-            if (this.isSaveOK) {
-                window.location.reload();
+            switch (this.serverCode) {
+                case 0:                         // 文章異動
+                    window.location.reload();
+                    break;
+                case 1:                         // 刪除編輯中的圖片
+
+                    break;
+                case 2:                         // 刪除文章
+                    window.location.reload();
+                    break;
+                case 3:                         // 讀取編輯文章發生錯誤
+                    break;
+                default:
             }
         },
         CreateMessage(id) {
@@ -174,33 +185,41 @@ let App = new Vue({
             })
                 .then((result) => {
                     $dgDialog.modal("show");
-                    this.serverMsg = result.data.isOK;
-                    this.saveMsg = "OK";
+                    this.serverMsg = result.data.msg;
                 })
                 .catch((msg) => {
                     console.error(msg);
                 });
         },
         DeleteMessagePic(evt) {
+            // ToDo 20180824 給定 pic ID 值
             if (confirm("是否要刪除圖片？")) {
                 axios.post("List/DeleteMessagePic", {
-                    pic: this.editExistID
+                    picID: 0
                 })
-                    .then((result) => {
+                    .then((response) => {
                         $dgDialog.modal("show");
-                        _this.serverMsg = result.data.isOK;
-                        _this.saveMsg = result.data.msg;
+                        this.serverMsg = response.data.msg;
+                        $(evt.target).parents("li").remove();
                     });
             }
         },
         EditMessage(id) {
-            $dgMessage.modal("show");
             this.ClearMessage();
             this.editMessageID = id;
             if (id !== 0) {
                 axios.get(`list/GetUniqueMessage/?messageID=${id}`)
-                    .then((result) => {
-                        console.log(result);
+                    .then((response) => {
+                        if (response.data.length > 0) {
+                            this.editMessage = response.data[0];
+                            $dgMessage.modal("show");
+                        } else {
+                            this.serverMsg = response.data.msg;
+                            $dgDialog.modal("show");
+                        }
+                    })
+                    .catch((msg) => {
+                        console.error(msg);
                     });
             }
         },
