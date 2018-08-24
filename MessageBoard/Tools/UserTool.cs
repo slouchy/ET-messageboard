@@ -95,15 +95,25 @@ namespace MessageBoard.Tools
             return Tuple.Create(result, errorList, msg, userList);
         }
 
+        /// <summary>
+        /// 取得登入的使用者資訊
+        /// </summary>
+        /// <param name="httpRequest">Request</param>
+        /// <returns>回傳使用者資訊</returns>
         public IQueryable<UserList> GetLoginedUser(HttpRequestBase httpRequest)
         {
+            IQueryable<UserList> userData = null;
             string cookieName = FormsAuthentication.FormsCookieName;
             HttpCookie authCookie = httpRequest.Cookies[cookieName];
-            FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
-            string userName = ticket.Name;
+            if (authCookie != null)
+            {
+                FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
+                string userName = ticket.Name;
 
-            var userData = messageBoardEntities.UserList
-                .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+                userData = messageBoardEntities.UserList
+                    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+            }
+
             return userData;
         }
 

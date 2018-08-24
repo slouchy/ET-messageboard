@@ -15,10 +15,17 @@
 </head>
 <body>
     <div id="main" class="container">
-        editMessageID: {{editMessageID}}, editMajorID {{editMajorID}}
-        |
-        <button type="button" class="btn btn-primary" v-on:click="OpenCreateMessage(0)">建立新留言</button> |
-        @Html.ActionLink("TEST 登入", "Index", "Login", null, new { @class = "btn btn-light" }) |
+        @if (TempData["userLogined"].ToString() == "1")
+        {
+            <button type="button" class="btn btn-primary" v-on:click="OpenCreateMessage(0)">建立新留言</button> <text> | </text>
+            @Html.ActionLink("登出", "Logout", "List", null, new { @class = "btn btn-danger" }) <text> | </text>
+        }
+        else
+        {
+            @Html.ActionLink("登入頁", "Index", "Login", null, new { @class = "btn btn-light" })<text> | </text>
+        }
+        @TempData["userName"]
+        您好
         <ul class="message-list">
             <li v-for="(message, i) in messages" class="message-list-item">
                 <vue-message :message="message" :count="i+1" v-on:clicked-edit="EditMessage" v-on:clicked-create-message="CreateMessage" v-on:clicked-delete-message="DeleteMessage"></vue-message>
@@ -115,16 +122,19 @@
             <div class="col col-sm-3 text-right">
                 <img :src="userinfo.userIcon" alt="使用者頭像" class="user-pic" />
             </div>
-            <div class="col col-sm-8 text-left">
+            <div class="col col-sm-7 text-left">
                 {{userinfo.userName}}<br />
                 連線 IP：{{userinfo.ip}}<br />
                 {{userinfo.CreateDate}}<br />
                 #{{count}}
             </div>
-            <div class="col col-sm-1 text-center">
+            <div class="col col-sm-2 text-center">
                 <button v-show="userinfo.isShowDelete" type="button" class="btn btn-danger btn-sm" v-on:click="DeleteMessage">刪除</button>
                 <button v-show="userinfo.isShowEdit" type="button" class="btn btn-primary btn-sm" v-on:click="OpenEditMessage">編輯</button>
-                <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage">回覆</button><br />
+                @if (TempData["userLogined"].ToString() == "1")
+                {
+                    <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage">回覆</button><br />
+                }
             </div>
         </div>
     </template>
@@ -133,7 +143,7 @@
         <div class="row row-content">
             <div class="col col-sm-1"></div>
             <div class="col col-sm-11 text-center">
-                {{message.content}}
+                <div v-html="message.content" class="text-left"></div>
                 <br /><br />
                 <div v-if="message.pics.length > 0" class="text-left border-top">
                     相關圖片：

@@ -24,7 +24,16 @@ namespace MessageBoard.Controllers
         // GET: List
         public ActionResult Index()
         {
+            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            TempData["userLogined"] = userData != null ? "1" : "0";
+            TempData["userName"] = userData != null ? userData.FirstOrDefault().UserName : "訪客";
             return View();
+        }
+
+        public ActionResult Logout()
+        {
+            FormsAuthentication.SignOut();
+            return RedirectToAction("index", "login");
         }
 
         public ActionResult AddMessage(string content, int majorID)
@@ -79,8 +88,15 @@ namespace MessageBoard.Controllers
 
         public ActionResult GetMajorMessage()
         {
-            //int userID = userTool.GetLoginedUserID(HttpContext.Request);
-            // ToDo 20180823 使用者權限和管理員權限
+            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            int userID = -1;
+            int userAccess = -1;
+            if (userData != null)
+            {
+                userID = userData.FirstOrDefault().UserID;
+                userAccess = userData.FirstOrDefault().UserAccess;
+            }
+
             var majorMessage = from l in messageBoardEntities.MajorMessageList
                                join m in messageBoardEntities.Message on l.MajorID equals m.MajorID
                                where (l.MessageStatus == true && (m.MessageCount == 0 && m.MessageStatus == true))
@@ -92,26 +108,34 @@ namespace MessageBoard.Controllers
                                    m.MessageID,
                                    m.CreateDate,
                                    ip = m.IP,
-                                   isShowDelete = m.CreateUserID == userID,
+                                   isShowDelete = m.CreateUserID == userID || userAccess == 0,
                                    isShowEdit = m.CreateUserID == userID,
                                    content = m.Message1,
                                    userIcon = u.UserIcon,
                                    userName = u.UserName,
                                    replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID && r.MessageStatus).Count() - 1,
                                    pics = from pic in messageBoardEntities.MessagePic
-                                                where pic.MessageID == m.MessageID
-                                                select new {
-                                                    pic.PicID,
-                                                    pic.PicURL
-                                                }
+                                          where pic.MessageID == m.MessageID
+                                          select new
+                                          {
+                                              pic.PicID,
+                                              pic.PicURL
+                                          }
                                };
             return Json(majorMessage, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetMessageList(int majorID)
         {
-            //int userID = userTool.GetLoginedUserID(HttpContext.Request);
-            // ToDo 20180823 使用者權限和管理員權限
+            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            int userID = -1;
+            int userAccess = -1;
+            if (userData != null)
+            {
+                userID = userData.FirstOrDefault().UserID;
+                userAccess = userData.FirstOrDefault().UserAccess;
+            }
+
             var messageList = from m in messageBoardEntities.Message
                               where m.MajorID == majorID && m.MessageStatus && m.MessageCount > 0
                               join u in messageBoardEntities.UserList on m.CreateUserID equals u.UserID
@@ -122,7 +146,7 @@ namespace MessageBoard.Controllers
                                   m.MessageID,
                                   m.CreateDate,
                                   ip = m.IP,
-                                  isShowDelete = m.CreateUserID == userID,
+                                  isShowDelete = m.CreateUserID == userID || userAccess == 0,
                                   isShowEdit = m.CreateUserID == userID,
                                   content = m.Message1,
                                   userIcon = u.UserIcon,

@@ -67,8 +67,8 @@ let replyCountTemplate = Vue.component("vue-replycount", {
                     .then((result) => {
                         result.data.forEach((item, i) => {
                             item.CreateDate = GetDatetimeFormatted(item.CreateDate);
-                            item.content = decodeURI(item.content);
-                            item.userName = decodeURI(item.content);
+                            item.content = decodeURI(item.content).replace(/(\r\n|\r|\n)/gi, "<br/>");
+                            item.userName = decodeURI(item.userName);
                         });
                         this.replys = result.data;
                         this.isLoading = false;
