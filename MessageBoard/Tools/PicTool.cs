@@ -57,7 +57,7 @@ namespace MessageBoard.Tools
                 httpPostedFile.SaveAs(tmpFilePath);
                 using (Image originImg = Image.FromFile(tmpFilePath))
                 {
-                    using (var formattedImg = AddFrame(GetResizeImage(originImg, 400, 400), 400, 400))
+                    using (var formattedImg = AddFrame(GetResizeImage(originImg, 100, 100), 100, 100))
                     {
                         formattedImg.Save(realFilePath);
                     }
