@@ -107,7 +107,7 @@ namespace MessageBoard.Controllers
             //int userID = userTool.GetLoginedUserID(HttpContext.Request);
             // ToDo 20180823 使用者權限和管理員權限
             var messageList = from m in messageBoardEntities.Message
-                              where m.MajorID == majorID && m.MessageStatus
+                              where m.MajorID == majorID && m.MessageStatus && m.MessageCount > 0
                               join u in messageBoardEntities.UserList on m.CreateUserID equals u.UserID
                               orderby m.CreateDate descending
                               select new
@@ -125,6 +125,22 @@ namespace MessageBoard.Controllers
                                   replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID).Count() - 1
                               };
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetUniqueMessage(int messageID)
+        {
+            //int userID = userTool.GetLoginedUserID(HttpContext.Request);
+            // ToDo 20180823 使用者權限和管理員權限
+            var message = from m in messageBoardEntities.Message
+                          where m.MessageID == messageID
+                          select new
+                          {
+                              m.MajorID,
+                              m.MessageID,
+                              m.MessagePic,
+                              m.Message1
+                          };
+            return Json(message, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult UpdateMessage(int messageID)
