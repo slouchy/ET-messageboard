@@ -125,7 +125,9 @@ let App = new Vue({
         editMajorID: 0,
         editMessageID: 0,
         editExistID: 0,
-        editMessage: null,
+        editMessage: "",
+        editPics: [],
+        editTitle: "建立文章",
         file: "",
         isFileOK: true,
         isHasMessage: false,
@@ -162,6 +164,7 @@ let App = new Vue({
         ClearMessage() {
             this.editMajorID = 0;
             this.editMessageID = 0;
+            this.editTitle = "建立文章";
             this.file = "";
             this.messageContent = "";
         },
@@ -199,11 +202,11 @@ let App = new Vue({
                     console.error(msg);
                 });
         },
-        DeleteMessagePic(evt) {
+        DeleteMessagePic(id) {
             // ToDo 20180824 給定 pic ID 值
             if (confirm("是否要刪除圖片？")) {
                 axios.post("List/DeleteMessagePic", {
-                    picID: 0
+                    picID: id
                 })
                     .then((response) => {
                         $dgDialog.modal("show");
@@ -219,7 +222,11 @@ let App = new Vue({
                 axios.get(`list/GetUniqueMessage?messageID=${id}`)
                     .then((response) => {
                         if (response.data.length > 0) {
+                            this.editTitle = "編輯文章";
                             this.editMessage = response.data[0];
+                            this.messageContent = response.data[0].Message1;
+                            this.editPics = response.data[0].pics;
+                            this.isEnabledSave = true;
                             $dgMessage.modal("show");
                         } else {
                             this.serverMsg = response.data.msg;

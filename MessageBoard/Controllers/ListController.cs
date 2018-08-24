@@ -13,7 +13,6 @@ namespace MessageBoard.Controllers
     //[Authorize]
     public class ListController : Controller
     {
-        int userID = 3;
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
         UserTool userTool = new UserTool();
         ReturnJSON returnJSON = new ReturnJSON()
@@ -36,9 +35,9 @@ namespace MessageBoard.Controllers
             return RedirectToAction("index", "login");
         }
 
-        public ActionResult AddMessage(string content, int majorID)
+        public JsonResult AddMessage(string content, int majorID)
         {
-            //int userID = userTool.GetLoginedUserID(HttpContext.Request);
+            CheckUserData(out int userID, out int userAccess);
             if (content != null && content != "" && userID != 0)
             {
                 Message message;
@@ -53,11 +52,11 @@ namespace MessageBoard.Controllers
 
                     messageBoardEntities.MajorMessageList.Add(majorMessage);
                     messageBoardEntities.SaveChanges();
-                    SaveMessage(content, userID, majorMessage.MajorID, out message);
+                    InsertMessage(content, userID, majorMessage.MajorID, out message);
                 }
                 else
                 {                   // 回覆留言
-                    SaveMessage(content, userID, majorID, out message);
+                    InsertMessage(content, userID, majorID, out message);
                 }
 
                 // 儲存圖片
@@ -70,7 +69,7 @@ namespace MessageBoard.Controllers
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult DeleteMessage(int messageID)
+        public JsonResult DeleteMessage(int messageID)
         {
             var message = messageBoardEntities.Message.Find(messageID);
             message.MessageStatus = false;
@@ -78,7 +77,7 @@ namespace MessageBoard.Controllers
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult DeleteMessagePic(int picID)
+        public JsonResult DeleteMessagePic(int picID)
         {
             var pic = messageBoardEntities.MessagePic.Find(picID);
             messageBoardEntities.MessagePic.Remove(pic);
@@ -86,17 +85,9 @@ namespace MessageBoard.Controllers
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetMajorMessage()
+        public JsonResult GetMajorMessage()
         {
-            var userData = userTool.GetLoginedUser(HttpContext.Request);
-            int userID = -1;
-            int userAccess = -1;
-            if (userData != null)
-            {
-                userID = userData.FirstOrDefault().UserID;
-                userAccess = userData.FirstOrDefault().UserAccess;
-            }
-
+            CheckUserData(out int userID, out int userAccess);
             var majorMessage = from l in messageBoardEntities.MajorMessageList
                                join m in messageBoardEntities.Message on l.MajorID equals m.MajorID
                                where (l.MessageStatus == true && (m.MessageCount == 0 && m.MessageStatus == true))
@@ -125,17 +116,9 @@ namespace MessageBoard.Controllers
             return Json(majorMessage, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetMessageList(int majorID)
+        public JsonResult GetMessageList(int majorID)
         {
-            var userData = userTool.GetLoginedUser(HttpContext.Request);
-            int userID = -1;
-            int userAccess = -1;
-            if (userData != null)
-            {
-                userID = userData.FirstOrDefault().UserID;
-                userAccess = userData.FirstOrDefault().UserAccess;
-            }
-
+            CheckUserData(out int userID, out int userAccess);
             var messageList = from m in messageBoardEntities.Message
                               where m.MajorID == majorID && m.MessageStatus && m.MessageCount > 0
                               join u in messageBoardEntities.UserList on m.CreateUserID equals u.UserID
@@ -163,36 +146,73 @@ namespace MessageBoard.Controllers
             return Json(messageList, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetUniqueMessage(int messageID)
+        public JsonResult GetUniqueMessage(int messageID)
         {
-            //int userID = userTool.GetLoginedUserID(HttpContext.Request);
-            // ToDo 20180823 使用者權限和管理員權限
-            //var message = (from m in messageBoardEntities.Message
-            //              where m.MessageID == messageID
-            //              select new
-            //              {
-            //                  m.MajorID,
-            //                  m.MessageID,
-            //                  m.Message1
-            //              }).ToList();
-            var message = messageBoardEntities.Message
-                .Where(r => r.MessageID == messageID)
-                .Select(r => new
-                {
-                    r.MajorID,
-                    r.MessageID,
-                    r.Message1
-                });
+            CheckUserData(out int userID, out int userAccess);
+            var message = (from m in messageBoardEntities.Message
+                           where m.MessageID == messageID && m.CreateUserID == userID
+                           select new
+                           {
+                               m.MajorID,
+                               m.MessageID,
+                               m.Message1,
+                               pics = from pic in messageBoardEntities.MessagePic
+                                      where pic.MessageID == messageID
+                                      select new
+                                      {
+                                          pic.PicID,
+                                          pic.PicURL
+                                      }
+                           });
 
             return Json(message, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult UpdateMessage(int messageID)
+        public JsonResult UpdateMessage(string content, int messageID)
         {
+            CheckUserData(out int userID, out int userAccess);
+            if (content != null && content != "" && userID != 0)
+            {
+                Message message = messageBoardEntities.Message.Find(messageID);
+                message.Message1 = content;
+                messageBoardEntities.SaveChanges();
+
+                // 儲存圖片
+                if (Request.Files.Count > 0)
+                {
+                    PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                }
+            }
+
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
-        private int SaveMessage(string content, int userID, int majorID, out Message message)
+        /// <summary>
+        /// 檢查登入的使用者資料
+        /// </summary>
+        /// <param name="userID">回傳使用者 ID</param>
+        /// <param name="userAccess">回傳使用者權限</param>
+        private void CheckUserData(out int userID, out int userAccess)
+        {
+            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            userID = -1;
+            userAccess = -1;
+            if (userData != null)
+            {
+                userID = userData.FirstOrDefault().UserID;
+                userAccess = userData.FirstOrDefault().UserAccess;
+            }
+        }
+
+        /// <summary>
+        /// 新增留言
+        /// </summary>
+        /// <param name="content">留言內容</param>
+        /// <param name="userID">使用者 ID</param>
+        /// <param name="majorID">留言主 ID</param>
+        /// <param name="message">回傳新增的留言</param>
+        /// <returns>回傳異動筆數</returns>
+        private int InsertMessage(string content, int userID, int majorID, out Message message)
         {
             message = new Message()
             {
