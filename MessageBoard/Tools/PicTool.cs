@@ -88,12 +88,12 @@ namespace MessageBoard.Tools
                 string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}");
                 string realFilePath = HttpContext.Current.Server.MapPath($@"~/{realFileViturePath}");
 
-                httpPostedFile.SaveAs(tmpFilePath);
-                using (Image originImg = Image.FromFile(tmpFilePath))
+                httpPostedFile.SaveAs(realFilePath);
+                using (Image originImg = Image.FromFile(realFilePath))
                 {
                     using (var formattedImg = GetResizeImage(originImg, 60, 60))
                     {
-                        formattedImg.Save(realFilePath);
+                        formattedImg.Save(tmpFilePath);
                     }
                 }
 
@@ -105,6 +105,7 @@ namespace MessageBoard.Tools
                     CreateUserID = userID,
                     PicURL = realFileViturePath
                 };
+                messageBoardEntities.MessagePic.Add(messagePic);
                 messageBoardEntities.SaveChanges();
                 GC.Collect();
             }
@@ -113,7 +114,6 @@ namespace MessageBoard.Tools
                 LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
             }
         }
-
 
         /// <summary>
         /// 在圖片四周加入白邊

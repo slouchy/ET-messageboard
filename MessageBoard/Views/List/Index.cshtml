@@ -10,6 +10,7 @@
     <title>留言板-檢視留言</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.css" />
     <link rel="stylesheet" href="~/content/List.min.css" />
 </head>
 <body>
@@ -21,7 +22,7 @@
         <ul class="message-list">
             <li v-for="(message, i) in messages" class="message-list-item">
                 <vue-message :message="message" :count="i+1" v-on:clicked-edit="EditMessage" v-on:clicked-create-message="CreateMessage" v-on:clicked-delete-message="DeleteMessage"></vue-message>
-                <vue-replycount :total="message.replyCount" :majorID="message.MajorID"></vue-replycount>
+                <vue-replycount :total="message.replyCount" :majorID="message.MajorID" v-on:clicked-edit="EditMessage" v-on:clicked-create-message="CreateMessage" v-on:clicked-delete-message="DeleteMessage"></vue-replycount>
             </li>
         </ul>
 
@@ -41,7 +42,7 @@
                         </div>
                         <div class="row">
                             <div class="col col-sm-12">
-                                <textarea v-bind:class="{'form-control':true,'user-message':true, 'is-invalid':isOutOverMaxContent}" id="txtMessage" rows="5" v-model="messageContent" placeholder="請輸入留言內容"></textarea>
+                                <textarea v-bind:class="{'form-control':true,'user-message':true, 'is-invalid':isOutOverMaxContent}" id="txtMessage" rows="5" v-model="messageContent" placeholder="請輸入留言內容">{{editMessage !== null ? editMessage.content:""}}</textarea>
                                 <small v-bind:class="{'form-text':true, 'text-muted':!isOutOverMaxContent,'invalid-feedback':isOutOverMaxContent}">上限 300 字，目前已經輸入 {{messageCount}} 個字</small><br />
                             </div>
                         </div>
@@ -100,9 +101,9 @@
                 <button class="btn btn-sm btn-light" data-show="1" :data-id="majorid" v-on:click="ToggleReply">{{isShowReply? hideTxt:showTxt}}({{total}})</button>
                 <br />
                 <div v-if="total === 0" class="replays text-center">目前沒有資料</div>
-                <div v-if="total !== 0" class="text-right">
-                    <ul v-for="message in replys" class=" message-list message-list-reply ">
-                        <vue-message :message="message" v-on:clicked-edit="EditMessage" v-on:clicked-create-message="ReplyMessage" v-on:clicked-delete-message="DeleteMessage"></vue-message>
+                <div v-if="total !== 0" class="replays text-right">
+                    <ul v-for="(message, i) in replys" class=" message-list message-list-reply ">
+                        <vue-message :message="message" :count="i+1" v-on:clicked-edit="EditMessage" v-on:clicked-create-message="ReplyMessage" v-on:clicked-delete-message="DeleteMessage"></vue-message>
                     </ul>
                 </div>
             </div>
@@ -115,12 +116,12 @@
                 <img :src="userinfo.userIcon" alt="使用者頭像" class="user-pic" />
             </div>
             <div class="col col-sm-8 text-left">
-                {{userinfo.userName}}{{userinfo.order}}<br />
+                {{userinfo.userName}}<br />
                 連線 IP：{{userinfo.ip}}<br />
                 {{userinfo.CreateDate}}<br />
                 #{{count}}
             </div>
-            <div class="col col-sm-1 text-right">
+            <div class="col col-sm-1 text-center">
                 <button v-show="userinfo.isShowDelete" type="button" class="btn btn-danger btn-sm" v-on:click="DeleteMessage">刪除</button>
                 <button v-show="userinfo.isShowEdit" type="button" class="btn btn-primary btn-sm" v-on:click="OpenEditMessage">編輯</button>
                 <button type="button" class="btn btn-info btn-sm" v-on:click="OpenCreateMessage">回覆</button><br />
@@ -131,7 +132,20 @@
     <template id="content-template">
         <div class="row row-content">
             <div class="col col-sm-1"></div>
-            <div class="col col-sm-11 text-center">{{message.content}}</div>
+            <div class="col col-sm-11 text-center">
+                {{message.content}}
+                <br /><br />
+                <div v-if="message.pics.length > 0" class="text-left border-top">
+                    相關圖片：
+                    <ul>
+                        <li v-for="img in message.pics">
+                            <a :href="img.PicURL" data-toggle="lightbox" data-title="相關圖片">
+                                <img :src="img.PicURL.replace(/\/origin/i,'')" alt="相關圖片" class="img-thumbnail" />
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </template>
 
@@ -146,6 +160,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js.map"></script>
     <script src="~/Scripts/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="~/Scripts/FieldCheck.js"></script>

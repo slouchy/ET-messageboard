@@ -1,8 +1,9 @@
 ﻿// VUE NOTE： 
 //      ● component 在父子間傳遞資料，使用駝峰式命名會傳遞失敗
 //      ● component 需要先被定義才能使用
-//      ● v-on 事件綁定要注意「;」，不正確會無法綁定
+//      ● v-on 事件綁定要注意不能有「;」，不正確會無法綁定
 
+// ToDo 20180824 AJAX 讀取遮罩
 let $dgMessage;
 let $dgDialog;
 $(function () {
@@ -12,6 +13,12 @@ $(function () {
         trigger: "manual",
         html: true
     });
+
+    $(document).on('click', '[data-toggle="lightbox"]', function (event) {
+        event.preventDefault();
+        $(this).ekkoLightbox();
+    });
+
     $dgMessage = $("#dgMessage");
     $dgDialog = $("#dgDialog");
     $dgMessage.modal({
@@ -56,14 +63,14 @@ let replyCountTemplate = Vue.component("vue-replycount", {
             $(evt.target).nextAll(".replays").slideToggle();
 
             if (this.isShowReply) {
-                axios.get(`list/GetMessageList/?majorID=${this.majorid}`)
+                axios.get(`list/GetMessageList?majorID=${this.majorid}`)
                     .then((result) => {
-                        // ToDo 2018.08.22 測試使用，串完資料後不需要 filter
-                        //let showReplys = result.data.filter((reply, i) => {
-                        //    return i < this.total;
-                        //});
-
-                        //this.replys = showReplys;
+                        result.data.forEach((item, i) => {
+                            item.CreateDate = GetDatetimeFormatted(item.CreateDate);
+                            item.content = decodeURI(item.content);
+                            item.userName = decodeURI(item.content);
+                        });
+                        this.replys = result.data;
                         this.isLoading = false;
                     });
             } else {
@@ -91,7 +98,6 @@ let userinfoTemplate = Vue.component("vue-userinfo", {
             this.$emit("clicked-create-message", this.userinfo.majorID);
         },
         OpenEditMessage() {
-            console.log("InEdit");
             this.$emit("clicked-edit", this.userinfo.MessageID);
         }
     }
@@ -101,14 +107,14 @@ let messageTemplate = Vue.component("vue-message", {
     template: "#message-template",
     props: ["message", "count"],
     methods: {
-        DeleteMessage(id) {
-            this.$emit("clicked-delete-message", id);
+        DeleteMessage() {
+            this.$emit("clicked-delete-message", this.message.MessageID);
         },
-        EditMessage(id) {
-            this.$emit("clicked-edit", id);
+        EditMessage() {
+            this.$emit("clicked-edit", this.message.MessageID);
         },
-        ReplyMessage(id) {
-            this.$emit("clicked-create-message", id);
+        ReplyMessage() {
+            this.$emit("clicked-create-message", this.message.MajorID);
         }
     }
 });
@@ -135,6 +141,8 @@ let App = new Vue({
             .then((result) => {
                 result.data.forEach((item, i) => {
                     item.CreateDate = GetDatetimeFormatted(item.CreateDate);
+                    item.content = decodeURI(item.content);
+                    item.userName = decodeURI(item.userName);
                 });
                 _this.messages = result.data;
             })
@@ -208,7 +216,7 @@ let App = new Vue({
             this.ClearMessage();
             this.editMessageID = id;
             if (id !== 0) {
-                axios.get(`list/GetUniqueMessage/?messageID=${id}`)
+                axios.get(`list/GetUniqueMessage?messageID=${id}`)
                     .then((response) => {
                         if (response.data.length > 0) {
                             this.editMessage = response.data[0];
@@ -241,15 +249,15 @@ let App = new Vue({
                     let formData = new FormData();
                     $(evt.target).focus();
                     $(".user-message").prop("disabled", true);
-                    formData.append("content", encodeURI(this.messageContent));
-                    formData.append("picList", encodeURI(this.file));
+                    formData.append("content", encodeURI(_this.messageContent));
+                    formData.append("picList", _this.file);
 
                     if (this.editMessageID === 0) {
                         postURL = "List/AddMessage";
-                        formData.append("majorID", this.editMajorID);
+                        formData.append("majorID", _this.editMajorID);
                     } else {
                         postURL = "List/UpdateMessage";
-                        formData.append("messageID", this.editMessageID);
+                        formData.append("messageID", _this.editMessageID);
                     }
 
                     $(".user-message").prop("disabled", false);

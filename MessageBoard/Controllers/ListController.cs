@@ -1,5 +1,6 @@
 ﻿using MessageBoard.Models;
 using MessageBoard.Tools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +90,6 @@ namespace MessageBoard.Controllers
                                {
                                    l.MajorID,
                                    m.MessageID,
-                                   m.MessagePic,
                                    m.CreateDate,
                                    ip = m.IP,
                                    isShowDelete = m.CreateUserID == userID,
@@ -97,7 +97,13 @@ namespace MessageBoard.Controllers
                                    content = m.Message1,
                                    userIcon = u.UserIcon,
                                    userName = u.UserName,
-                                   replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID).Count() - 1
+                                   replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID && r.MessageStatus).Count() - 1,
+                                   pics = from pic in messageBoardEntities.MessagePic
+                                                where pic.MessageID == m.MessageID
+                                                select new {
+                                                    pic.PicID,
+                                                    pic.PicURL
+                                                }
                                };
             return Json(majorMessage, JsonRequestBehavior.AllowGet);
         }
@@ -109,12 +115,11 @@ namespace MessageBoard.Controllers
             var messageList = from m in messageBoardEntities.Message
                               where m.MajorID == majorID && m.MessageStatus && m.MessageCount > 0
                               join u in messageBoardEntities.UserList on m.CreateUserID equals u.UserID
-                              orderby m.CreateDate descending
+                              orderby m.CreateDate ascending
                               select new
                               {
                                   m.MajorID,
                                   m.MessageID,
-                                  m.MessagePic,
                                   m.CreateDate,
                                   ip = m.IP,
                                   isShowDelete = m.CreateUserID == userID,
@@ -122,24 +127,39 @@ namespace MessageBoard.Controllers
                                   content = m.Message1,
                                   userIcon = u.UserIcon,
                                   userName = u.UserName,
-                                  replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID).Count() - 1
+                                  replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID).Count() - 1,
+                                  pics = from pic in messageBoardEntities.MessagePic
+                                         where pic.MessageID == m.MessageID
+                                         select new
+                                         {
+                                             pic.PicID,
+                                             pic.PicURL
+                                         }
                               };
-            return Json(returnJSON, JsonRequestBehavior.AllowGet);
+            return Json(messageList, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetUniqueMessage(int messageID)
         {
             //int userID = userTool.GetLoginedUserID(HttpContext.Request);
             // ToDo 20180823 使用者權限和管理員權限
-            var message = from m in messageBoardEntities.Message
-                          where m.MessageID == messageID
-                          select new
-                          {
-                              m.MajorID,
-                              m.MessageID,
-                              m.MessagePic,
-                              m.Message1
-                          };
+            //var message = (from m in messageBoardEntities.Message
+            //              where m.MessageID == messageID
+            //              select new
+            //              {
+            //                  m.MajorID,
+            //                  m.MessageID,
+            //                  m.Message1
+            //              }).ToList();
+            var message = messageBoardEntities.Message
+                .Where(r => r.MessageID == messageID)
+                .Select(r => new
+                {
+                    r.MajorID,
+                    r.MessageID,
+                    r.Message1
+                });
+
             return Json(message, JsonRequestBehavior.AllowGet);
         }
 
