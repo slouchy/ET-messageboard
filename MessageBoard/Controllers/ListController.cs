@@ -42,7 +42,7 @@ namespace MessageBoard.Controllers
             };
 
             returnJSON.msg = CheckCreateMesaage(content, userID);
-            if (returnJSON.msg.Length == 0)
+            if (string.IsNullOrWhiteSpace(returnJSON.msg))
             {
                 try
                 {
@@ -256,7 +256,7 @@ namespace MessageBoard.Controllers
             };
 
             returnJSON.msg = CheckCreateMesaage(content, userID);
-            if (returnJSON.msg.Length == 0)
+            if (string.IsNullOrWhiteSpace(returnJSON.msg))
             {
                 try
                 {
