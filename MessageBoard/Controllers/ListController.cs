@@ -15,11 +15,6 @@ namespace MessageBoard.Controllers
     {
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
         UserTool userTool = new UserTool();
-        ReturnJSON returnJSON = new ReturnJSON()
-        {
-            isOK = true,
-            msg = ""
-        };
         // GET: List
         public ActionResult Index()
         {
@@ -38,31 +33,48 @@ namespace MessageBoard.Controllers
         public JsonResult AddMessage(string content, int majorID)
         {
             CheckUserData(out int userID, out int userAccess);
-            if (content != null && content != "" && userID != 0)
+            ReturnJSON returnJSON = new ReturnJSON()
             {
-                Message message;
-                if (majorID == 0)   // 建立新主題
+                isOK = false,
+                msg = string.Empty
+            };
+
+            returnJSON.msg = CheckCreateMesaage(content, userID);
+            if (returnJSON.msg.Length == 0)
+            {
+                try
                 {
-                    MajorMessageList majorMessage = new MajorMessageList()
+                    Message message;
+                    if (majorID == 0)   // 建立新主題
                     {
-                        CreateUserID = userID,
-                        MessageStatus = true,
-                        CreateDate = DateTime.Now
-                    };
+                        MajorMessageList majorMessage = new MajorMessageList()
+                        {
+                            CreateUserID = userID,
+                            MessageStatus = true,
+                            CreateDate = DateTime.Now
+                        };
 
-                    messageBoardEntities.MajorMessageList.Add(majorMessage);
-                    messageBoardEntities.SaveChanges();
-                    InsertMessage(content, userID, majorMessage.MajorID, out message);
-                }
-                else
-                {                   // 回覆留言
-                    InsertMessage(content, userID, majorID, out message);
-                }
+                        messageBoardEntities.MajorMessageList.Add(majorMessage);
+                        messageBoardEntities.SaveChanges();
+                        InsertMessage(content, userID, majorMessage.MajorID, out message);
+                    }
+                    else
+                    {                   // 回覆留言
+                        InsertMessage(content, userID, majorID, out message);
+                    }
 
-                // 儲存圖片
-                if (Request.Files.Count > 0)
+                    // 儲存圖片
+                    if (Request.Files.Count > 0)
+                    {
+                        PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                    }
+
+                    returnJSON.isOK = true;
+                    returnJSON.msg = "文章新增成功";
+                }
+                catch (Exception)
                 {
-                    PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                    returnJSON.msg = "<br/> * 儲存時發生錯誤";
                 }
             }
 
@@ -71,17 +83,67 @@ namespace MessageBoard.Controllers
 
         public JsonResult DeleteMessage(int messageID)
         {
-            var message = messageBoardEntities.Message.Find(messageID);
-            message.MessageStatus = false;
-            messageBoardEntities.SaveChanges();
+            CheckUserData(out int userID, out int userAccess);
+            ReturnJSON returnJSON = new ReturnJSON()
+            {
+                isOK = true,
+                msg = ""
+            };
+
+            if (userID == 0)
+            {
+                returnJSON.isOK = false;
+                returnJSON.msg += "<br/> * 請先登入";
+            }
+            else
+            {
+                try
+                {
+                    var message = messageBoardEntities.Message.Find(messageID);
+                    message.MessageStatus = false;
+                    messageBoardEntities.SaveChanges();
+                    returnJSON.msg = "文章刪除成功";
+                }
+                catch (Exception)
+                {
+                    returnJSON.isOK = false;
+                    returnJSON.msg += "<br/> * 刪除文章時發生錯誤";
+                }
+            }
+
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult DeleteMessagePic(int picID)
         {
-            var pic = messageBoardEntities.MessagePic.Find(picID);
-            messageBoardEntities.MessagePic.Remove(pic);
-            messageBoardEntities.SaveChanges();
+            CheckUserData(out int userID, out int userAccess);
+            ReturnJSON returnJSON = new ReturnJSON()
+            {
+                isOK = true,
+                msg = ""
+            };
+
+            if (userID == 0)
+            {
+                returnJSON.isOK = false;
+                returnJSON.msg += "<br/> * 請先登入";
+            }
+            else
+            {
+                try
+                {
+                    var pic = messageBoardEntities.MessagePic.Find(picID);
+                    messageBoardEntities.MessagePic.Remove(pic);
+                    messageBoardEntities.SaveChanges();
+                    returnJSON.msg = "圖片刪除成功";
+                }
+                catch (Exception)
+                {
+                    returnJSON.isOK = false;
+                    returnJSON.msg += "<br/> * 刪除圖片時發生錯誤";
+                }
+            }
+
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
@@ -149,6 +211,18 @@ namespace MessageBoard.Controllers
         public JsonResult GetUniqueMessage(int messageID)
         {
             CheckUserData(out int userID, out int userAccess);
+            ReturnJSON returnJSON = new ReturnJSON()
+            {
+                isOK = true,
+                msg = ""
+            };
+
+            if (userID == 0)
+            {
+                returnJSON.isOK = false;
+                returnJSON.msg += "<br/> * 請先登入";
+            }
+
             var message = (from m in messageBoardEntities.Message
                            where m.MessageID == messageID && m.CreateUserID == userID
                            select new
@@ -165,26 +239,71 @@ namespace MessageBoard.Controllers
                                       }
                            });
 
-            return Json(message, JsonRequestBehavior.AllowGet);
+            returnJSON.data = message;
+            if (!message.Any())
+            {
+                returnJSON.isOK = false;
+                returnJSON.msg += "<br/> * 找不到指定文章";
+            }
+
+            return Json(returnJSON, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult UpdateMessage(string content, int messageID)
         {
             CheckUserData(out int userID, out int userAccess);
-            if (content != null && content != "" && userID != 0)
+            ReturnJSON returnJSON = new ReturnJSON()
             {
-                Message message = messageBoardEntities.Message.Find(messageID);
-                message.Message1 = content;
-                messageBoardEntities.SaveChanges();
+                isOK = false,
+                msg = ""
+            };
 
-                // 儲存圖片
-                if (Request.Files.Count > 0)
+            returnJSON.msg = CheckCreateMesaage(content, userID);
+            if (returnJSON.msg.Length == 0)
+            {
+                try
                 {
-                    PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                    Message message = messageBoardEntities.Message.Find(messageID);
+                    message.Message1 = content;
+                    messageBoardEntities.SaveChanges();
+                    // 儲存圖片
+                    if (Request.Files.Count > 0)
+                    {
+                        PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                    }
+
+                    returnJSON.isOK = true;
+                    returnJSON.msg = "文章儲存成功";
+                }
+                catch (Exception)
+                {
+                    returnJSON.msg = "<br/> * 儲存時生錯誤";
                 }
             }
 
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// 檢查建立文章時的內容和使用者
+        /// </summary>
+        /// <param name="content">內容</param>
+        /// <param name="userID">使用者</param>
+        /// <returns>回傳檢查字串</returns>
+        private string CheckCreateMesaage(string content, int userID)
+        {
+            string errorMsg = string.Empty;
+            if (content == null || content == "")
+            {
+                errorMsg += "<br/> * 請輸入留言內容";
+            }
+
+            if (userID == 0)
+            {
+                errorMsg = "<br/> * 請先登入";
+            }
+
+            return errorMsg;
         }
 
         /// <summary>
@@ -232,6 +351,7 @@ namespace MessageBoard.Controllers
         {
             public bool isOK { get; set; }
             public string msg { get; set; }
+            public IQueryable data { get; set; }
         }
     }
 }

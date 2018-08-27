@@ -132,10 +132,12 @@ let App = new Vue({
         isFileOK: true,
         isHasMessage: false,
         isOutOverMaxContent: false,
+        isEditDeleteFile: false,
         messageContent: "",
         messages: [],
         serverMsg: "",
-        serverCode: 0
+        serverCode: 0,
+        testPics: []
     },
     mounted() {
         let _this = this;
@@ -182,6 +184,12 @@ let App = new Vue({
                 case 3:                         // 讀取編輯文章發生錯誤
                     break;
                 default:
+                    break;
+            }
+        },
+        CloseMessage() {
+            if (this.isEditDeleteFile) {
+                window.location.reload();
             }
         },
         CreateMessage(id) {
@@ -197,21 +205,34 @@ let App = new Vue({
                 .then((result) => {
                     $dgDialog.modal("show");
                     this.serverMsg = result.data.msg;
+                    this.serverCode = -1;
+                    if (result.data.isOK) {
+                        this.serverCode = 2;
+                    }
                 })
                 .catch((msg) => {
                     console.error(msg);
                 });
         },
-        DeleteMessagePic(id) {
-            // ToDo 20180824 給定 pic ID 值
+        DeleteMessagePic(evt, id) {
             if (confirm("是否要刪除圖片？")) {
+                let $this = $(evt.target);
+                $this.prop("disabled", true);
                 axios.post("List/DeleteMessagePic", {
                     picID: id
                 })
                     .then((response) => {
                         $dgDialog.modal("show");
                         this.serverMsg = response.data.msg;
-                        $(evt.target).parents("li").remove();
+                        this.serverCode = 1;
+                        this.isEditDeleteFile = true;
+                        $this.parents("li").remove();
+                        $this.prop("disabled", false);
+                    })
+                    .catch((msg) => {
+                        $dgDialog.modal("show");
+                        this.serverMsg = "發生錯誤";
+                        console.error(msg);
                     });
             }
         },
@@ -221,14 +242,14 @@ let App = new Vue({
             if (id !== 0) {
                 axios.get(`list/GetUniqueMessage?messageID=${id}`)
                     .then((response) => {
-                        if (response.data.length > 0) {
+                        if (response.data.isOK) {
                             this.editTitle = "編輯文章";
-                            this.editMessage = response.data[0];
-                            this.messageContent = response.data[0].Message1;
-                            this.editPics = response.data[0].pics;
-                            this.isEnabledSave = true;
+                            this.editMessage = response.data.data[0];
+                            this.messageContent = decodeURI(response.data.data[0].Message1);
+                            this.editPics = response.data.data[0].pics;
                             $dgMessage.modal("show");
                         } else {
+                            this.serverCode = 3;
                             this.serverMsg = response.data.msg;
                             $dgDialog.modal("show");
                         }
@@ -243,18 +264,20 @@ let App = new Vue({
         },
         SaveMessage(evt) {
             let _this = this;
+            let $this = $(evt.target);
+            $this.prop("disabled", true);
             $(".user-message").each(function () {
                 $(this).focus();
             });
 
-            $(evt.target).focus();
+            $this.focus();
             if (!this.isEnabledSave) {
                 evt.preventDefault();
             } else {
                 setTimeout(() => {
                     let postURL = "";
                     let formData = new FormData();
-                    $(evt.target).focus();
+                    $this.focus();
                     $(".user-message").prop("disabled", true);
                     formData.append("content", encodeURI(_this.messageContent));
                     formData.append("picList", _this.file);
@@ -279,6 +302,8 @@ let App = new Vue({
                         })
                         .catch((msg) => {
                             console.error(msg);
+                            _this.serverMsg = "發生錯誤";
+                            $dgDialog.modal("show");
                         });
                 }, 300);
             }
