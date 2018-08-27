@@ -3,7 +3,6 @@
 //      ● component 需要先被定義才能使用
 //      ● v-on 事件綁定要注意不能有「;」，不正確會無法綁定
 
-// ToDo 20180824 AJAX 讀取遮罩
 let $dgMessage;
 let $dgDialog;
 $(function () {
@@ -149,6 +148,7 @@ let App = new Vue({
                     item.userName = decodeURI(item.userName);
                 });
                 _this.messages = result.data;
+                $.unblockUI();
             })
             .catch((msg) => { console.log(msg); });
     },
@@ -199,10 +199,12 @@ let App = new Vue({
         },
         DeleteMessage(id) {
             this.editMessageID = id;
+            $.blockUI({ css: { "z-index": "1099" } });
             axios.post("List/DeleteMessage", {
                 messageID: this.editMessageID
             })
                 .then((result) => {
+                    $.unblockUI();
                     $dgDialog.modal("show");
                     this.serverMsg = result.data.msg;
                     this.serverCode = -1;
@@ -217,11 +219,13 @@ let App = new Vue({
         DeleteMessagePic(evt, id) {
             if (confirm("是否要刪除圖片？")) {
                 let $this = $(evt.target);
+                $.blockUI({ css: { "z-index": "1099" } });
                 $this.prop("disabled", true);
                 axios.post("List/DeleteMessagePic", {
                     picID: id
                 })
                     .then((response) => {
+                        $.unblockUI();
                         $dgDialog.modal("show");
                         this.serverMsg = response.data.msg;
                         this.serverCode = 1;
@@ -274,6 +278,7 @@ let App = new Vue({
             if (!this.isEnabledSave) {
                 evt.preventDefault();
             } else {
+                $.blockUI({ css: { "z-index": "1099" } });
                 setTimeout(() => {
                     let postURL = "";
                     let formData = new FormData();
@@ -293,6 +298,7 @@ let App = new Vue({
                     $(".user-message").prop("disabled", false);
                     axios.post(postURL, formData)
                         .then((response) => {
+                            $.unblockUI();
                             _this.isSaveOK = response.data.isOK;
                             _this.serverMsg = response.data.msg;
                             $dgDialog.modal("show");
