@@ -14,17 +14,15 @@ let vueApp = new Vue({
     el: "#main",
     data: {
         dgMsg: "",
-        isFieldOK: false,   // 這個 VUE 沒有使用，因應共用函
+        isFieldOK: false,   // 這個檔案沒有使用，因應共用函式而增加
         isPWOK: false,
         isResetedPW: false,
         isShowEditPW: false,
-        isShowMuted: false,
         isShowRestPW: false,
         pw1: "",
         pw2: "",
         userName: "",
-        userEmail: "",
-        newPW: ""
+        userEmail: ""
     },
     mounted() { },
     methods: {
