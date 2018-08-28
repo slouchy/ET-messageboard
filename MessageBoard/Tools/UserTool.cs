@@ -95,6 +95,15 @@ namespace MessageBoard.Tools
             return Tuple.Create(result, errorList, msg, userList);
         }
 
+        public bool isUserEmailExist(string userName, string userEmail)
+        {
+            var userInfo = messageBoardEntities.UserList
+                .Where(r => r.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase) &&
+                r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+
+            return userInfo.Any();
+        }
+
         /// <summary>
         /// 取得登入的使用者資訊
         /// </summary>
@@ -139,6 +148,33 @@ namespace MessageBoard.Tools
             return !messageBoardEntities.UserList
                 .Where(r => r.UserName.Equals(userAccount, StringComparison.CurrentCultureIgnoreCase))
                 .Any();
+        }
+
+        public bool isSetNewPW(string userName, string userEmail, string newPW)
+        {
+            bool result = false;
+            if (isUserPWCorrect(newPW))
+            {
+                var userInfo = messageBoardEntities.UserList
+                    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase) &&
+                    r.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase));
+                if (userInfo.Any())
+                {
+                    try
+                    {
+                        var userUpdate = messageBoardEntities.UserList.Find(userInfo.FirstOrDefault().UserID);
+                        userUpdate.UserPW = GetSaltPW(newPW);
+                        messageBoardEntities.SaveChanges();
+                        result = true;
+                    }
+                    catch (Exception err)
+                    {
+                        LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
