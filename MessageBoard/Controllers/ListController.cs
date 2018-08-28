@@ -23,6 +23,7 @@ namespace MessageBoard.Controllers
             var userData = userTool.GetLoginedUser(HttpContext.Request);
             TempData["userLogined"] = userData != null ? "1" : "0";
             TempData["userName"] = userData != null ? userData.FirstOrDefault().UserName : "訪客";
+            TempData["userIcon"] = userData != null ? userData.FirstOrDefault().UserIcon : "";
             return View();
         }
 

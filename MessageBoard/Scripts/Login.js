@@ -12,7 +12,8 @@ let vueApp = new Vue({
     data: {
         isEnabledSubmit: false,
         isPWOK: false,
-        isUserOK: true
+        isUserOK: true,
+        userName: ""
     },
     methods: {
         CheckUserAccount(evt) {
@@ -50,6 +51,11 @@ let vueApp = new Vue({
             if (!this.isFieldOK()) {
                 evt.preventDefault();
             }
+        }
+    },
+    computed: {
+        isShowMuted() {
+            return this.userName.length > 0;
         }
     }
 });
