@@ -1,6 +1,7 @@
 ﻿// VUE NOTE： 
 //      ● v-if 改變事件，可能會無法再次觸發其他的 init 事件 (如：jQuery $(function(){}))
 
+let $dgDialog;
 $(function () {
     $("input[type='text'], input[type='password'], input[type='email'], input[type='file']").popover({
         template: '<div class="popover bg-danger" role="tooltip"><div class="arrow arrow-danger arrow-right"></div><h3 class="popover-header text-white"></h3><div class="popover-body text-white"></div></div>',
@@ -8,6 +9,7 @@ $(function () {
         trigger: "manual",
         html: true
     });
+    $dgDialog = $("#dgDialog");
 });
 
 let vueApp = new Vue({
@@ -96,7 +98,7 @@ let vueApp = new Vue({
             }
 
             if (this.dgMsg.length !== 0) {
-                $("#dgDialog").modal("show");
+                $dgDialog.modal("show");
             } else {
                 $(evt.target).prop("disabled", true);
                 axios.get("forgetpw/CheckUserNameEmail", {
@@ -107,7 +109,7 @@ let vueApp = new Vue({
                 })
                     .then((response) => {
                         _this.dgMsg = response.data.msg;
-                        $("#dgDialog").modal("show");
+                        $dgDialog.modal("show");
                         if (response.data.isOK) {
                             _this.isShowRestPW = true;
                             $(".user-resetpw").removeClass("hidden");
@@ -128,7 +130,7 @@ let vueApp = new Vue({
             }
 
             if (this.dgMsg.length !== 0) {
-                $("#dgDialog").modal("show");
+                $dgDialog.modal("show");
             } else {
                 $(evt.target).prop("disabled", true);
                 axios.get("forgetpw/ResetPW", {
@@ -143,7 +145,7 @@ let vueApp = new Vue({
                         this.dgMsg = response.data.msg;
                         this.isResetedPW = response.data.isOK;
                         this.SetFocus(".btn-close-dialog");
-                        $("#dgDialog").modal("show");
+                        $dgDialog.modal("show");
                     });
             }
         },

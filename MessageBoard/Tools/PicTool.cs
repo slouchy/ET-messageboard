@@ -13,8 +13,6 @@ namespace MessageBoard.Tools
 {
     public class PicTool
     {
-
-
         /// <summary>
         /// 檢查檔案大小
         /// </summary>
@@ -76,6 +74,7 @@ namespace MessageBoard.Tools
             catch (Exception err)
             {
                 LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
+                throw;
             }
         }
 

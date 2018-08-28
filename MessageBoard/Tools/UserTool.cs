@@ -126,6 +126,13 @@ namespace MessageBoard.Tools
             return userData;
         }
 
+        public Tuple<bool, IQueryable<UserList>> UserPWCorrect(HttpRequestBase httpRequest, string pw)
+        {
+            IQueryable<UserList> userData = GetLoginedUser(httpRequest);
+            bool result = userData != null && userData.Any() && userData.FirstOrDefault().UserPW.Equals(GetSaltPW(pw));
+            return Tuple.Create(result, userData);
+        }
+
         /// <summary>
         /// 檢查 Email 是否不存在
         /// </summary>
@@ -150,6 +157,13 @@ namespace MessageBoard.Tools
                 .Any();
         }
 
+        /// <summary>
+        /// 設定使用者新密碼
+        /// </summary>
+        /// <param name="userName">使用者名稱</param>
+        /// <param name="userEmail">使用者信箱</param>
+        /// <param name="newPW">新的密碼</param>
+        /// <returns>回傳設定結果</returns>
         public bool isSetNewPW(string userName, string userEmail, string newPW)
         {
             bool result = false;
@@ -172,6 +186,7 @@ namespace MessageBoard.Tools
                     {
                         DoUserLog(userInfo.FirstOrDefault().UserID, "改密碼失敗");
                         LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
+                        throw;
                     }
                 }
             }

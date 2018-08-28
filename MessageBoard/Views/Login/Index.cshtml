@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="~/content/bootstrapCorrect.min.css" />
     <style>
-        [v-initHidden] {
+        [v-cloak] {
             display: none;
         }
     </style>
@@ -28,7 +28,7 @@
                     </div>
                     <div class="col-6 text-left">
                         <input type="text" id="userAccount" name="userAccount" value="@TempData["userAccount"]" class="form-control user-info" placeholder="請輸入 20 個字以內的中英數字" v-on:keyup="CheckUserAccount" v-on:blur="CheckUserAccount" v-model="userName" />
-                        <small class="form-text text-muted" v-show="isShowMuted" v-initHidden>請輸入 20 個字以內的中英數字</small>
+                        <small class="form-text text-muted" v-show="isShowMuted" v-cloak>請輸入 20 個字以內的中英數字</small>
                     </div>
                     <div class="col-3 text-left"></div>
                 </div>
