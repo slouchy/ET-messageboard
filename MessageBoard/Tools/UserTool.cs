@@ -166,9 +166,11 @@ namespace MessageBoard.Tools
                         userUpdate.UserPW = GetSaltPW(newPW);
                         messageBoardEntities.SaveChanges();
                         result = true;
+                        DoUserLog(userInfo.FirstOrDefault().UserID, "改密碼成功");
                     }
                     catch (Exception err)
                     {
+                        DoUserLog(userInfo.FirstOrDefault().UserID, "改密碼失敗");
                         LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
                     }
                 }
