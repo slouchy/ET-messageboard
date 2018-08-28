@@ -301,6 +301,7 @@ let App = new Vue({
                             $.unblockUI();
                             _this.isSaveOK = response.data.isOK;
                             _this.serverMsg = response.data.msg;
+                            _this.serverCode = 0;
                             $dgDialog.modal("show");
                             if (!_this.isSaveOK) {
                                 $(".user-message").prop("disabled", false);

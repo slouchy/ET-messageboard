@@ -19,6 +19,7 @@ namespace MessageBoard.Models
         public string PicURL { get; set; }
         public System.DateTime CreateDate { get; set; }
         public int CreateUserID { get; set; }
+        public bool picStatus { get; set; }
     
         public virtual Message Message { get; set; }
         public virtual UserList UserList { get; set; }

@@ -36,6 +36,7 @@
           <Property Name="PicURL" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="CreateDate" Type="datetime" Nullable="false" />
           <Property Name="CreateUserID" Type="int" Nullable="false" />
+          <Property Name="picStatus" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="OperateLog">
           <Key>
@@ -230,11 +231,12 @@
           </Key>
           <Property Name="PicID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MessageID" Type="Int32" Nullable="false" />
-          <Property Name="PicURL" Type="String" Nullable="false" />
+          <Property Name="PicURL" Type="String" Nullable="false" MaxLength="100" Unicode="true" FixedLength="false" />
           <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="CreateUserID" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Message" Relationship="Self.FK_MessagePic_Message" FromRole="MessagePic" ToRole="Message" />
           <NavigationProperty Name="UserList" Relationship="Self.FK_MessagePic_UserList" FromRole="MessagePic" ToRole="UserList" />
+          <Property Name="picStatus" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="OperateLog">
           <Key>
@@ -432,6 +434,7 @@
           <EntitySetMapping Name="MessagePic">
             <EntityTypeMapping TypeName="MessageBoardModel.MessagePic">
               <MappingFragment StoreEntitySet="MessagePic">
+                <ScalarProperty Name="picStatus" ColumnName="picStatus" />
                 <ScalarProperty Name="PicID" ColumnName="PicID" />
                 <ScalarProperty Name="MessageID" ColumnName="MessageID" />
                 <ScalarProperty Name="PicURL" ColumnName="PicURL" />

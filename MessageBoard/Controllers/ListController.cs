@@ -142,7 +142,7 @@ namespace MessageBoard.Controllers
                 try
                 {
                     var pic = messageBoardEntities.MessagePic.Find(picID);
-                    messageBoardEntities.MessagePic.Remove(pic);
+                    pic.picStatus = false;
                     messageBoardEntities.SaveChanges();
                     returnJSON.msg = "圖片刪除成功";
                     returnJSON.isOK = true;
@@ -178,7 +178,7 @@ namespace MessageBoard.Controllers
                                    userName = u.UserName,
                                    replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID && r.MessageStatus).Count() - 1,
                                    pics = from pic in messageBoardEntities.MessagePic
-                                          where pic.MessageID == m.MessageID
+                                          where pic.MessageID == m.MessageID && pic.picStatus
                                           select new
                                           {
                                               pic.PicID,
@@ -209,7 +209,7 @@ namespace MessageBoard.Controllers
                                   userName = u.UserName,
                                   replyCount = messageBoardEntities.Message.Where(r => r.MajorID == m.MajorID).Count() - 1,
                                   pics = from pic in messageBoardEntities.MessagePic
-                                         where pic.MessageID == m.MessageID
+                                         where pic.MessageID == m.MessageID && pic.picStatus
                                          select new
                                          {
                                              pic.PicID,
@@ -243,7 +243,7 @@ namespace MessageBoard.Controllers
                                m.MessageID,
                                m.Message1,
                                pics = from pic in messageBoardEntities.MessagePic
-                                      where pic.MessageID == messageID
+                                      where pic.MessageID == messageID && pic.picStatus
                                       select new
                                       {
                                           pic.PicID,

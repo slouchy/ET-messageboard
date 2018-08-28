@@ -123,7 +123,8 @@ namespace MessageBoard.Tools
                     CreateDate = DateTime.Now,
                     MessageID = messageID,
                     CreateUserID = userID,
-                    PicURL = realFileViturePath
+                    PicURL = realFileViturePath,
+                    picStatus = true
                 };
                 messageBoardEntities.MessagePic.Add(messagePic);
                 messageBoardEntities.SaveChanges();
