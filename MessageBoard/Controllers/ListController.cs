@@ -36,6 +36,7 @@ namespace MessageBoard.Controllers
         public JsonResult AddMessage(string content, int majorID)
         {
             CheckUserData(out int userID, out int userAccess);
+            List<HttpPostedFileBase> postFile = new List<HttpPostedFileBase>();
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = false,
@@ -43,6 +44,19 @@ namespace MessageBoard.Controllers
             };
 
             returnJSON.msg = CheckCreateMesaage(content, userID);
+            if (Request.Files.Count > 0)
+            {
+                postFile.Add(Request.Files[0]);
+                var fileCheck = PicTool.CheckUplaodFiles(postFile[0], @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
+                if (!fileCheck.Item1)
+                {
+                    foreach (var item in fileCheck.Item2)
+                    {
+                        returnJSON.msg += $"<br/> * {item}";
+                    }
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(returnJSON.msg))
             {
                 try
@@ -59,9 +73,9 @@ namespace MessageBoard.Controllers
                     }
 
                     // 儲存圖片
-                    if (Request.Files.Count > 0)
+                    if (postFile.Count > 0)
                     {
-                        PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
+                        PicTool.SaveMessagePic(postFile[0], userID, message.MessageID);
                     }
 
                     returnJSON.isOK = true;
@@ -250,6 +264,7 @@ namespace MessageBoard.Controllers
         public JsonResult UpdateMessage(string content, int messageID)
         {
             CheckUserData(out int userID, out int userAccess);
+            List<HttpPostedFileBase> postFile = new List<HttpPostedFileBase>();
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = false,
@@ -257,6 +272,18 @@ namespace MessageBoard.Controllers
             };
 
             returnJSON.msg = CheckCreateMesaage(content, userID);
+            if (Request.Files.Count > 0)
+            {
+                postFile.Add(Request.Files[0]);
+                var fileCheck = PicTool.CheckUplaodFiles(postFile[0], @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
+                if (!fileCheck.Item1)
+                {
+                    foreach (var item in fileCheck.Item2)
+                    {
+                        returnJSON.msg += $"<br/> * {item}";
+                    }
+                }
+            }
             if (string.IsNullOrWhiteSpace(returnJSON.msg))
             {
                 try
@@ -265,7 +292,7 @@ namespace MessageBoard.Controllers
                     message.Message1 = content;
                     messageBoardEntities.SaveChanges();
                     // 儲存圖片
-                    if (Request.Files.Count > 0)
+                    if (postFile.Count > 0)
                     {
                         PicTool.SaveMessagePic(Request.Files[0], userID, message.MessageID);
                     }

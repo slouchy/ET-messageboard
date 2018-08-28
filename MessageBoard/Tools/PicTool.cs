@@ -13,13 +13,34 @@ namespace MessageBoard.Tools
 {
     public class PicTool
     {
+        public static Tuple<bool, List<string>> CheckUplaodFiles(HttpPostedFileBase httpPostedFile, string allowRegexStr, int allowMaxSize = 1)
+        {
+            bool result = true;
+            List<string> errors = new List<string>();
+
+            if (!isFileSizeAllow(httpPostedFile, allowMaxSize))
+            {
+                errors.Add($"檔案大於 {allowMaxSize}MB");
+                result = false;
+            }
+
+
+            if (!isFileExtensionAllow(httpPostedFile.FileName, allowRegexStr))
+            {
+                errors.Add($"不是圖像檔案");
+                result = false;
+            }
+
+            return Tuple.Create(result, errors);
+        }
+
         /// <summary>
         /// 檢查檔案大小
         /// </summary>
         /// <param name="httpPostedFile">傳遞的檔案</param>
         /// <param name="allowMaxSize">(選填)允許的檔案大小(預設：1MB)</param>
         /// <returns>回傳結果</returns>
-        public static bool isFileSizeAllow(HttpPostedFileBase httpPostedFile, int allowMaxSize = 1)
+        private static bool isFileSizeAllow(HttpPostedFileBase httpPostedFile, int allowMaxSize = 1)
         {
             return (httpPostedFile.ContentLength < allowMaxSize * 1024 * 1024);
         }
@@ -30,7 +51,7 @@ namespace MessageBoard.Tools
         /// <param name="fileName">檔案名稱</param>
         /// <param name="allowRegexStr">待檢查的附檔名正則表達式</param>
         /// <returns>回傳結果</returns>
-        public static bool isFileExtensionAllow(string fileName, string allowRegexStr)
+        private static bool isFileExtensionAllow(string fileName, string allowRegexStr)
         {
             return Regex.IsMatch(fileName, allowRegexStr);
         }

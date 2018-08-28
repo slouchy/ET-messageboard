@@ -19,7 +19,7 @@
         {
             <button type="button" class="btn btn-primary" v-on:click="OpenCreateMessage(0)">建立新留言</button> <text> | </text>
             @Html.ActionLink("登出", "Logout", "List", null, new { @class = "btn btn-danger" }) <text> | </text>
-            <a href="UserProfile"><img src='@TempData["userIcon"]' alt="使用者頭像" style="height:40px;" /></a>
+            <a href="UserProfile" class="btn btn-light"><img src='@TempData["userIcon"]' alt="使用者頭像" style="height:40px;" /></a>
         }
         else
         {
@@ -154,7 +154,7 @@
                 <div v-if="message.pics.length > 0" class="text-left border-top">
                     相關圖片：
                     <ul>
-                        <li v-for="img in message.pics">
+                        <li v-for="img in message.pics" style="display: inline-block; margin-left:5px;"> 
                             <a :href="img.PicURL" data-toggle="lightbox" data-title="相關圖片">
                                 <img :src="img.PicURL.replace(/\/origin/i,'')" alt="相關圖片" class="img-thumbnail" />
                             </a>

@@ -72,14 +72,13 @@ namespace MessageBoard.Controllers
             else
             {
                 HttpPostedFileBase postFile = Request.Files[0];
-                if (!PicTool.isFileSizeAllow(postFile, 1))
+                var fileCheck = PicTool.CheckUplaodFiles(postFile, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
+                if (!fileCheck.Item1)
                 {
-                    errorList.Add("檔案大於 1MB");
-                }
-
-                if (!PicTool.isFileExtensionAllow(postFile.FileName, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$"))
-                {
-                    errorList.Add("不是圖像檔案");
+                    foreach (var item in fileCheck.Item2)
+                    {
+                        errorList.Add(item);
+                    }
                 }
             }
 

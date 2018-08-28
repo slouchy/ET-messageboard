@@ -84,16 +84,14 @@ namespace MessageBoard.Controllers
                 {
                     bool isFileCorrect = true;
                     HttpPostedFileBase postFile = Request.Files[0];
-                    if (!PicTool.isFileSizeAllow(postFile, 1))
+                    var fileCheck = PicTool.CheckUplaodFiles(postFile, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
+                    if (!fileCheck.Item1)
                     {
                         isFileCorrect = false;
-                        dgMsg += "<br/> * 頭像更新失敗：檔案大於 1MB";
-                    }
-
-                    if (!PicTool.isFileExtensionAllow(postFile.FileName, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$"))
-                    {
-                        isFileCorrect = false;
-                        dgMsg += "<br/> * 頭像更新失敗：不是圖像檔案";
+                        foreach (var item in fileCheck.Item2)
+                        {
+                            dgMsg += $"<br/> * {item}";
+                        }
                     }
 
                     if (isFileCorrect)
