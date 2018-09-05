@@ -16,6 +16,8 @@ namespace MessageBoard.Controllers
         // GET: Login
         public ActionResult Index()
         {
+
+
             return View();
         }
 

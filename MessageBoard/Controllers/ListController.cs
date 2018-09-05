@@ -21,6 +21,7 @@ namespace MessageBoard.Controllers
         public ActionResult Index()
         {
             var userData = userTool.GetLoginedUser(HttpContext.Request);
+            return Content(userData.Count().ToString());
             TempData["userLogined"] = userData != null ? "1" : "0";
             TempData["userName"] = userData != null ? userData.FirstOrDefault().UserName : "訪客";
             TempData["userIcon"] = userData != null ? userData.FirstOrDefault().UserIcon : "";

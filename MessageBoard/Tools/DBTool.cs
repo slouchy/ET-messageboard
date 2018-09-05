@@ -62,7 +62,16 @@ namespace MessageBoard.Tools
                 }
             }
             return Tuple.Create(isSQLCorrect, returnMsg, returnDT);
+            //return (isSQLCorrect, returnMsg, returnDT)=>  Tuple.Create(isSQLCorrect, returnMsg, returnDT);
         }
+
+        private (bool result, string msg) TestParameters(string ins) {
+            bool result = true;
+            string msg = "test";
+
+            return (result, msg);
+        }
+
 
         /// <summary>
         /// 不回傳值的 DB 操作
