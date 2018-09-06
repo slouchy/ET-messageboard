@@ -53,11 +53,15 @@ namespace MessageBoard.Models.Repository
                 .Where(r => r.UserStatus)
                 .OrderBy(r => r.UserID);
         }
+
         public UserList GetUserInfo(string userName)
         {
             var userInfo =
                 db.UserList
-                    .Where(r => r.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase))
+                    .Where(r =>
+                        r.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase) &&
+                        r.UserStatus == true
+                    )
                     .FirstOrDefault() ??
                 new UserList();
             return userInfo;

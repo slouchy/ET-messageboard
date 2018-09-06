@@ -134,6 +134,10 @@ namespace MessageBoard.Tools
 
             return userData;
         }
+        public UserList GetLoginedUser(string cookieUserName)
+        {
+            return userList.GetUserInfo(cookieUserName);
+        }
 
         public Tuple<bool, IQueryable<UserList>> UserPWCorrect(HttpRequestBase httpRequest, string pw)
         {

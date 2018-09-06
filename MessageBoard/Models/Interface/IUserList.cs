@@ -14,8 +14,8 @@ namespace MessageBoard.Models.Interface
 
         UserList GetUserInfo(int userID);
 
+        UserList GetUserInfo(string userName);
+
         IQueryable<UserList> GetUserLists();
-
-
     }
 }
