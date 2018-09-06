@@ -12,13 +12,12 @@ namespace MessageBoard.Tests
     [TestClass]
     public class Test_UserList
     {
-        private MessageBoardEntities _mockDbContext;
+        private MessageBoardEntities _mockDbContext = Substitute.For<MessageBoardEntities>();
 
         [TestInitialize]
         public void InitTest()
         {
             var mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist());
-            _mockDbContext = Substitute.For<MessageBoardEntities>();
             _mockDbContext.UserList.Returns(mockDbSet);
         }
 
@@ -50,6 +49,26 @@ namespace MessageBoard.Tests
             string userName = "Test3";
             var assignResult = mockDbUserList.GetUserInfo(userName);
             Assert.AreEqual(null, assignResult.UserName);
+        }
+
+        [TestMethod]
+        public void GetUniqueUserByUserIdWithUserAllowed()
+        {
+            var mockDbUserList = new UserListRepository(_mockDbContext);
+
+            var userID = 1;
+            var assignResult = mockDbUserList.GetUserInfo(userID);
+            Assert.AreEqual(userID, assignResult.UserID);
+        }
+
+        [TestMethod]
+        public void GetUniqueUserByUserIdWithUserNotAllowed()
+        {
+            var mockDbUserList = new UserListRepository(_mockDbContext);
+
+            var userID = 3;
+            var assignResult = mockDbUserList.GetUserInfo(userID);
+            Assert.AreEqual(0, assignResult.UserID);
         }
 
         private IQueryable<UserList> GetDemoUserlist()

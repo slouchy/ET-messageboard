@@ -56,20 +56,23 @@ namespace MessageBoard.Models.Repository
 
         public UserList GetUserInfo(string userName)
         {
-            var userInfo =
-                db.UserList
+            return db.UserList
                     .Where(r =>
                         r.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase) &&
                         r.UserStatus == true
                     )
                     .FirstOrDefault() ??
                 new UserList();
-            return userInfo;
         }
 
         public UserList GetUserInfo(int userID)
         {
-            return db.UserList.Find(userID);
+            return db.UserList
+                .Where(r =>
+                    r.UserID.Equals(userID) &&
+                    r.UserStatus == true)
+                .FirstOrDefault() ??
+                new UserList();
         }
 
         public void SaveChanges()
