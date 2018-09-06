@@ -14,9 +14,9 @@ namespace MessageBoard.Models.Repository
             private set;
         }
 
-        public UserListRepository()
+        public UserListRepository(MessageBoardEntities entities)
         {
-            db = new MessageBoardEntities();
+            db = entities;
         }
 
         public void Create(UserList userInfo)
@@ -49,7 +49,18 @@ namespace MessageBoard.Models.Repository
 
         public IQueryable<UserList> GetUserLists()
         {
-            return db.UserList.OrderBy(r => r.UserID);
+            return db.UserList
+                .Where(r => r.UserStatus)
+                .OrderBy(r => r.UserID);
+        }
+        public UserList GetUserInfo(string userName)
+        {
+            var userInfo =
+                db.UserList
+                    .Where(r => r.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault() ??
+                new UserList();
+            return userInfo;
         }
 
         public UserList GetUserInfo(int userID)

@@ -18,7 +18,7 @@ namespace MessageBoard.Tools
     {
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
 
-        private IUserList userList = new UserListRepository();
+        private IUserList userList = new UserListRepository(new MessageBoardEntities());
 
         /// <summary>
         /// 檢驗使用者是否登入成功
@@ -115,6 +115,9 @@ namespace MessageBoard.Tools
         /// <returns>回傳使用者資訊</returns>
         public IQueryable<UserList> GetLoginedUser(HttpRequestBase httpRequest)
         {
+            // ToDo 改為可以 unit Test
+            // 1. 方法拆開，傳入端不應該直接是值
+            // 2. 撰寫測試
             IQueryable<UserList> userData = null;
             string cookieName = FormsAuthentication.FormsCookieName;
             HttpCookie authCookie = httpRequest.Cookies[cookieName];
