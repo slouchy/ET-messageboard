@@ -18,7 +18,12 @@ namespace MessageBoard.Tools
     {
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
 
-        private IUserList userList = new UserListRepository(new MessageBoardEntities());
+        private IUserList userList;
+        public UserTool() { }
+        public UserTool(MessageBoardEntities entities)
+        {
+            userList = new UserListRepository(entities);
+        }
 
         /// <summary>
         /// 檢驗使用者是否登入成功

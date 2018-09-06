@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using MessageBoard.Models;
-using MessageBoard.Models.Repository;
+using MessageBoard.Tools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using System.Data.Entity;
 
 namespace MessageBoard.Tests
 {
     [TestClass]
-    public class Test_UserList
+    public class Test_UserTool
     {
         private MessageBoardEntities _mockDbContext = Substitute.For<MessageBoardEntities>();
 
@@ -22,33 +22,23 @@ namespace MessageBoard.Tests
         }
 
         [TestMethod]
-        public void GetAllowedUsersCount()
+        public void GetLoginUserByUserNameWithUserAllowed()
         {
-            var mockDbUserList = new UserListRepository(_mockDbContext);
+            var mockUserTool = new UserTool(_mockDbContext);
 
-            var expectedCount = 2;
-            var assignResult = mockDbUserList.GetUserLists();
-            Assert.AreEqual(expectedCount, assignResult.Count());
+            var userName = "test1";
+            var assignResult = mockUserTool.GetLoginedUser(userName);
+            Assert.AreEqual(userName, assignResult.UserName, true);
         }
 
         [TestMethod]
-        public void GetUniqueUserByUserNameWithUserAllowed()
+        public void GetLoginUserByUserNameWithUserNotAllowed()
         {
-            var mockDbUserList = new UserListRepository(_mockDbContext);
+            var mockUserTool = new UserTool(_mockDbContext);
 
-            string userName = "Test1";
-            var assignResult = mockDbUserList.GetUserInfo(userName);
-            Assert.AreEqual(userName, assignResult.UserName);
-        }
-
-        [TestMethod]
-        public void GetUniqueUserByUserNameWithUserNotAllowed()
-        {
-            var mockDbUserList = new UserListRepository(_mockDbContext);
-
-            string userName = "Test3";
-            var assignResult = mockDbUserList.GetUserInfo(userName);
-            Assert.AreEqual(null, assignResult.UserName);
+            var userName = "test3";
+            var assignResult = mockUserTool.GetLoginedUser(userName);
+            Assert.AreEqual(null, assignResult.UserName, true);
         }
 
         private IQueryable<UserList> GetDemoUserlist()
