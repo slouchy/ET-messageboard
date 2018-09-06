@@ -116,39 +116,29 @@ namespace MessageBoard.Tools
         /// <summary>
         /// 取得登入的使用者資訊
         /// </summary>
-        /// <param name="httpRequest">Request</param>
+        /// <param name="cookieUserName">使用者名稱</param>
         /// <returns>回傳使用者資訊</returns>
-        public IQueryable<UserList> GetLoginedUser(HttpRequestBase httpRequest)
-        {
-            // ToDo 改為可以 unit Test
-            // 1. 方法拆開，傳入端不應該直接是值
-            // 2. 撰寫測試
-            IQueryable<UserList> userData = null;
-            string cookieName = FormsAuthentication.FormsCookieName;
-            HttpCookie authCookie = httpRequest.Cookies[cookieName];
-            if (authCookie != null)
-            {
-                FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
-                string userName = ticket.Name;
-
-                userData = userList.GetUserLists().Where(
-                    r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
-                //userData = messageBoardEntities.UserList
-                //    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
-            }
-
-            return userData;
-        }
         public UserList GetLoginedUser(string cookieUserName)
         {
+            if (cookieUserName?.Length == 0)
+            {
+                return new UserList();
+            }
+
             return userList.GetUserInfo(cookieUserName);
         }
 
         public Tuple<bool, IQueryable<UserList>> UserPWCorrect(HttpRequestBase httpRequest, string pw)
         {
-            IQueryable<UserList> userData = GetLoginedUser(httpRequest);
-            bool result = userData != null && userData.Any() && userData.FirstOrDefault().UserPW.Equals(GetSaltPW(pw));
-            return Tuple.Create(result, userData);
+            var userCookie = CookieTool.CheckUserNameExist(httpRequest);
+            UserList userData = null;
+            if (userCookie.isValid)
+            {
+                userData = GetLoginedUser(userCookie.userName);
+            }
+
+            bool result = userData != null && userData.UserPW.Equals(GetSaltPW(pw));
+            return Tuple.Create(result, userData.ToQueryable());
         }
 
         /// <summary>
@@ -342,6 +332,14 @@ namespace MessageBoard.Tools
                 LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
                 throw;
             }
+        }
+    }
+
+    public static class ObjectExtensionMethods
+    {
+        public static IQueryable<TEntityType> ToQueryable<TEntityType>(this TEntityType instance)
+        {
+            return new[] { instance }.AsQueryable();
         }
     }
 }

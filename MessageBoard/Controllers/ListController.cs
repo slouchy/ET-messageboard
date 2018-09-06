@@ -14,16 +14,22 @@ namespace MessageBoard.Controllers
     public class ListController : Controller
     {
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
-        UserTool userTool = new UserTool();
-
+        UserTool userTool = new UserTool(new MessageBoardEntities());
 
         // GET: List
         public ActionResult Index()
         {
-            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
+            UserList userData = null;
+            if (userCookie.isValid)
+            {
+                userData = userTool.GetLoginedUser(userCookie.userName);
+            }
+
             TempData["userLogined"] = userData != null ? "1" : "0";
-            TempData["userName"] = userData != null ? userData.FirstOrDefault().UserName : "訪客";
-            TempData["userIcon"] = userData != null ? userData.FirstOrDefault().UserIcon : "";
+            TempData["userName"] = userData != null ? userData.UserName : "訪客";
+            TempData["userIcon"] = userData != null ? userData.UserIcon : "";
+
             return View();
         }
 
@@ -340,13 +346,17 @@ namespace MessageBoard.Controllers
         /// <param name="userAccess">回傳使用者權限</param>
         private void CheckUserData(out int userID, out int userAccess)
         {
-            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
             userID = -1;
             userAccess = -1;
-            if (userData != null)
+            if (userCookie.isValid)
             {
-                userID = userData.FirstOrDefault().UserID;
-                userAccess = userData.FirstOrDefault().UserAccess;
+                UserList userData = userTool.GetLoginedUser(userCookie.userName);
+                if (userData != null)
+                {
+                    userID = userData.UserID;
+                    userAccess = userData.UserAccess;
+                }
             }
         }
 

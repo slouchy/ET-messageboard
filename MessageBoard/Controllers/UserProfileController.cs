@@ -1,4 +1,5 @@
-﻿using MessageBoard.Tools;
+﻿using MessageBoard.Models;
+using MessageBoard.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +10,22 @@ namespace MessageBoard.Controllers
 {
     public class UserProfileController : Controller
     {
-        UserTool userTool = new UserTool();
+        UserTool userTool = new UserTool(new MessageBoardEntities());
 
         // GET: UserProfile
         [Authorize]
         public ActionResult Index()
         {
-            var userData = userTool.GetLoginedUser(HttpContext.Request);
+            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
+            UserList userData = null;
+            if (userCookie.isValid)
+            {
+                userData = userTool.GetLoginedUser(userCookie.userName);
+            }
+
             TempData["userLogined"] = userData != null ? "1" : "0";
-            TempData["userName"] = userData != null ? userData.FirstOrDefault().UserName : "訪客";
-            TempData["userIcon"] = userData != null ? userData.FirstOrDefault().UserIcon : "";
+            TempData["userName"] = userData != null ? userData.UserName : "訪客";
+            TempData["userIcon"] = userData != null ? userData.UserIcon : "";
             return View();
         }
 
@@ -38,11 +45,17 @@ namespace MessageBoard.Controllers
 
         public JsonResult isUserLogined()
         {
-            var userLogin = userTool.GetLoginedUser(HttpContext.Request);
+            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
+            UserList userData = null;
+            if (userCookie.isValid)
+            {
+                userData = userTool.GetLoginedUser(userCookie.userName);
+            }
+
             ReturnJSON returnJSON = new ReturnJSON()
             {
-                isOK = userLogin != null,
-                msg = userLogin == null ? "使用者已經被登出" : ""
+                isOK = userData != null,
+                msg = userData == null ? "使用者已經被登出" : ""
             };
 
             return Json(returnJSON, JsonRequestBehavior.AllowGet);
@@ -50,66 +63,73 @@ namespace MessageBoard.Controllers
 
         public JsonResult SavePorfile(string pw1, string pw2, int userID)
         {
-            pw1 = HttpUtility.UrlDecode(pw1);
-            pw2 = HttpUtility.UrlDecode(pw2);
-            var userLogin = userTool.GetLoginedUser(HttpContext.Request).FirstOrDefault();
-            string dgMsg = "儲存成功";
-            bool isCatch = false;
+            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
+            UserList userData = null;
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = false,
                 msg = "發生未預期的錯誤"
             };
 
-            try
+            if (userCookie.isValid)
             {
-                if (pw1 != pw2)
-                {
-                    dgMsg += "<br/> * 前後兩次密碼輸入不一致";
-                }
-                else if (userTool.isSetNewPW(userLogin.UserName, userLogin.UserEmail, pw1))
-                {
-                    dgMsg += "<br/> * 更新密碼成功";
-                    returnJSON.isOK = true;
-                }
-            }
-            catch (Exception)
-            {
-                isCatch = true;
-            }
+                userData = userTool.GetLoginedUser(userCookie.userName);
+                pw1 = HttpUtility.UrlDecode(pw1);
+                pw2 = HttpUtility.UrlDecode(pw2);
+                string dgMsg = "儲存成功";
+                bool isCatch = false;
 
-            try
-            {
-                if (Request.Files.Count > 0)
+                try
                 {
-                    bool isFileCorrect = true;
-                    HttpPostedFileBase postFile = Request.Files[0];
-                    var fileCheck = PicTool.CheckUplaodFiles(postFile, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
-                    if (!fileCheck.Item1)
+                    if (pw1 != pw2)
                     {
-                        isFileCorrect = false;
-                        foreach (var item in fileCheck.Item2)
+                        dgMsg += "<br/> * 前後兩次密碼輸入不一致";
+                    }
+                    else if (userTool.isSetNewPW(userData.UserName, userData.UserEmail, pw1))
+                    {
+                        dgMsg += "<br/> * 更新密碼成功";
+                        returnJSON.isOK = true;
+                    }
+                }
+                catch (Exception)
+                {
+                    isCatch = true;
+                }
+
+                try
+                {
+                    if (Request.Files.Count > 0)
+                    {
+                        bool isFileCorrect = true;
+                        HttpPostedFileBase postFile = Request.Files[0];
+                        var fileCheck = PicTool.CheckUplaodFiles(postFile, @"\.(?i:jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga|svg|jpeg2000)$", 1);
+                        if (!fileCheck.Item1)
                         {
-                            dgMsg += $"<br/> * {item}";
+                            isFileCorrect = false;
+                            foreach (var item in fileCheck.Item2)
+                            {
+                                dgMsg += $"<br/> * {item}";
+                            }
+                        }
+
+                        if (isFileCorrect)
+                        {
+                            returnJSON.isOK = true;
+                            dgMsg += "<br/> * 頭像更新成功";
+                            PicTool.SaveUserPic(postFile, userData.UserID);
                         }
                     }
 
-                    if (isFileCorrect)
-                    {
-                        returnJSON.isOK = true;
-                        dgMsg += "<br/> * 頭像更新成功";
-                        PicTool.SaveUserPic(postFile, userLogin.UserID);
-                    }
+                    returnJSON.isOK = true;
+                }
+                catch (Exception)
+                {
+                    isCatch = true;
                 }
 
-                returnJSON.isOK = true;
-            }
-            catch (Exception)
-            {
-                isCatch = true;
+                returnJSON.msg = isCatch ? returnJSON.msg : dgMsg;
             }
 
-            returnJSON.msg = isCatch ? returnJSON.msg : dgMsg;
             return Json(returnJSON);
         }
 
