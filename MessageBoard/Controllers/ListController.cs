@@ -19,13 +19,7 @@ namespace MessageBoard.Controllers
         // GET: List
         public ActionResult Index()
         {
-            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
-            UserList userData = null;
-            if (userCookie.isValid)
-            {
-                userData = userTool.GetLoginedUser(userCookie.userName);
-            }
-
+            UserList userData = userTool.GetUserByCookie(HttpContext.Request);
             TempData["userLogined"] = userData != null ? "1" : "0";
             TempData["userName"] = userData != null ? userData.UserName : "訪客";
             TempData["userIcon"] = userData != null ? userData.UserIcon : "";
@@ -346,17 +340,13 @@ namespace MessageBoard.Controllers
         /// <param name="userAccess">回傳使用者權限</param>
         private void CheckUserData(out int userID, out int userAccess)
         {
-            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
             userID = -1;
             userAccess = -1;
-            if (userCookie.isValid)
+            UserList userData = userTool.GetUserByCookie(HttpContext.Request);
+            if (userData != null)
             {
-                UserList userData = userTool.GetLoginedUser(userCookie.userName);
-                if (userData != null)
-                {
-                    userID = userData.UserID;
-                    userAccess = userData.UserAccess;
-                }
+                userID = userData.UserID;
+                userAccess = userData.UserAccess;
             }
         }
 

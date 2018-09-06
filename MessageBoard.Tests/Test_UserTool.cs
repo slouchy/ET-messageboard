@@ -21,26 +21,6 @@ namespace MessageBoard.Tests
             _mockDbContext.UserList.Returns(mockDbSet);
         }
 
-        [TestMethod]
-        public void GetLoginUserByUserNameWithUserAllowed()
-        {
-            var mockUserTool = new UserTool(_mockDbContext);
-
-            var userName = "test1";
-            var assignResult = mockUserTool.GetLoginedUser(userName);
-            Assert.AreEqual(userName, assignResult.UserName, true);
-        }
-
-        [TestMethod]
-        public void GetLoginUserByUserNameWithUserNotAllowed()
-        {
-            var mockUserTool = new UserTool(_mockDbContext);
-
-            var userName = "test3";
-            var assignResult = mockUserTool.GetLoginedUser(userName);
-            Assert.AreEqual(null, assignResult.UserName, true);
-        }
-
         private IQueryable<UserList> GetDemoUserlist()
         {
             return

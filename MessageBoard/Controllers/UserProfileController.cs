@@ -16,13 +16,7 @@ namespace MessageBoard.Controllers
         [Authorize]
         public ActionResult Index()
         {
-            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
-            UserList userData = null;
-            if (userCookie.isValid)
-            {
-                userData = userTool.GetLoginedUser(userCookie.userName);
-            }
-
+            UserList userData = userTool.GetUserByCookie(HttpContext.Request);
             TempData["userLogined"] = userData != null ? "1" : "0";
             TempData["userName"] = userData != null ? userData.UserName : "訪客";
             TempData["userIcon"] = userData != null ? userData.UserIcon : "";
@@ -45,13 +39,7 @@ namespace MessageBoard.Controllers
 
         public JsonResult isUserLogined()
         {
-            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
-            UserList userData = null;
-            if (userCookie.isValid)
-            {
-                userData = userTool.GetLoginedUser(userCookie.userName);
-            }
-
+            UserList userData = userTool.GetUserByCookie(HttpContext.Request);
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = userData != null,
@@ -63,17 +51,15 @@ namespace MessageBoard.Controllers
 
         public JsonResult SavePorfile(string pw1, string pw2, int userID)
         {
-            var userCookie = CookieTool.CheckUserNameExist(HttpContext.Request);
-            UserList userData = null;
+            UserList userData = userTool.GetUserByCookie(HttpContext.Request);
             ReturnJSON returnJSON = new ReturnJSON()
             {
                 isOK = false,
                 msg = "發生未預期的錯誤"
             };
 
-            if (userCookie.isValid)
+            if (userData != null)
             {
-                userData = userTool.GetLoginedUser(userCookie.userName);
                 pw1 = HttpUtility.UrlDecode(pw1);
                 pw2 = HttpUtility.UrlDecode(pw2);
                 string dgMsg = "儲存成功";

@@ -8,6 +8,11 @@ namespace MessageBoard.Tools
 {
     public static class CookieTool
     {
+        /// <summary>
+        /// 檢驗使用者的 Cookies 是否存在
+        /// </summary>
+        /// <param name="httpRequest">Request</param>
+        /// <returns></returns>
         public static (bool isValid, string userName) CheckUserNameExist(HttpRequestBase httpRequest)
         {
             bool isValid = false;

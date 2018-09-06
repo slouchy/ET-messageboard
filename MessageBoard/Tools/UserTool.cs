@@ -26,6 +26,24 @@ namespace MessageBoard.Tools
         }
 
         /// <summary>
+        /// 透過 Cookies 取得使用者資訊
+        /// </summary>
+        /// <param name="httpRequest">Http Request</param>
+        /// <param name="httpRequest">Http Request</param>
+        /// <returns></returns>
+        public UserList GetUserByCookie(HttpRequestBase httpRequest)
+        {
+            var userCookie = CookieTool.CheckUserNameExist(httpRequest);
+            UserList userData = null;
+            if (userCookie.isValid)
+            {
+                userData = GetLoginedUser(userCookie.userName);
+            }
+
+            return userData;
+        }
+
+        /// <summary>
         /// 檢驗使用者是否登入成功
         /// </summary>
         /// <param name="userAccount">使用者姓名</param>
@@ -111,21 +129,6 @@ namespace MessageBoard.Tools
                 r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
 
             return userInfo.Any();
-        }
-
-        /// <summary>
-        /// 取得登入的使用者資訊
-        /// </summary>
-        /// <param name="cookieUserName">使用者名稱</param>
-        /// <returns>回傳使用者資訊</returns>
-        public UserList GetLoginedUser(string cookieUserName)
-        {
-            if (cookieUserName?.Length == 0)
-            {
-                return new UserList();
-            }
-
-            return userList.GetUserInfo(cookieUserName);
         }
 
         public Tuple<bool, IQueryable<UserList>> UserPWCorrect(HttpRequestBase httpRequest, string pw)
@@ -302,6 +305,21 @@ namespace MessageBoard.Tools
             MD5 md5 = MD5.Create();
             byte[] orignPWByte = Encoding.Default.GetBytes(saltPw);
             return Convert.ToBase64String(md5.ComputeHash(md5.ComputeHash(orignPWByte)));
+        }
+
+        /// <summary>
+        /// 取得登入的使用者資訊
+        /// </summary>
+        /// <param name="cookieUserName">使用者名稱</param>
+        /// <returns>回傳使用者資訊</returns>
+        private UserList GetLoginedUser(string cookieUserName)
+        {
+            if (cookieUserName?.Length == 0)
+            {
+                return new UserList();
+            }
+
+            return userList.GetUserInfo(cookieUserName);
         }
 
         /// <summary>
