@@ -9,12 +9,16 @@ using System.Collections.Specialized;
 using MessageBoard.Models;
 using Newtonsoft.Json;
 using System.Web.Security;
+using MessageBoard.Models.Interface;
+using MessageBoard.Models.Repository;
 
 namespace MessageBoard.Tools
 {
     public class UserTool
     {
         MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
+
+        private IUserList userList = new UserListRepository();
 
         /// <summary>
         /// 檢驗使用者是否登入成功
@@ -119,8 +123,10 @@ namespace MessageBoard.Tools
                 FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
                 string userName = ticket.Name;
 
-                userData = messageBoardEntities.UserList
-                    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+                userData = userList.GetUserLists().Where(
+                    r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
+                //userData = messageBoardEntities.UserList
+                //    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
             }
 
             return userData;
