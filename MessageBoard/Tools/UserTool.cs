@@ -273,7 +273,7 @@ namespace MessageBoard.Tools
         /// <returns>回傳檢查結果</returns>
         private bool isUserPWCorrect(string userPw)
         {
-            Regex regPw = new Regex(@"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}");
+            Regex regPw = new Regex(@"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}$");
             return regPw.IsMatch(userPw) && userPw.Length >= 0 && userPw.Length <=12;
         }
 

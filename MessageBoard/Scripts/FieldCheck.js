@@ -15,8 +15,8 @@
 };
 
 let isPwSyntaxOK = (pwd) => {
-    let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}/;
-    return regPW.test(pwd);
+    let regPW = /(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}$/;
+    return regPW.test(pwd) && pwd.length > 0 && pwd.length < 12;
 };
 
 let isEmailSyntaxOK = (email) => {
