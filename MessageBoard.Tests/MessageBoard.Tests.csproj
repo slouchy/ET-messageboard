@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="ExtentionMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Test_DBMessagePic.cs" />
     <Compile Include="Test_DBUserList.cs" />
   </ItemGroup>
   <ItemGroup>

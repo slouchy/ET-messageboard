@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MessageBoard.Models.Interface
 {
-    interface IUserList : IDisposable
+    public interface IUserList : IDisposable
     {
         void Create(UserList userList);
 

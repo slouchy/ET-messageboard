@@ -164,6 +164,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Interface\IMessage.cs" />
+    <Compile Include="Models\Interface\IMessagePic.cs" />
     <Compile Include="Models\Interface\IUserList.cs" />
     <Compile Include="Models\MajorMessageList.cs">
       <DependentUpon>MessageBoardsModel.tt</DependentUpon>
@@ -192,6 +194,8 @@
     <Compile Include="Models\OperateLog.cs">
       <DependentUpon>MessageBoardsModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Repository\MessagePicRepository.cs" />
+    <Compile Include="Models\Repository\MessageRepository.cs" />
     <Compile Include="Models\Repository\UserListRepository.cs" />
     <Compile Include="Models\UserList.cs">
       <DependentUpon>MessageBoardsModel.tt</DependentUpon>

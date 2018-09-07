@@ -1,4 +1,6 @@
 ﻿using MessageBoard.Models;
+using MessageBoard.Models.Interface;
+using MessageBoard.Models.Repository;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,6 +15,13 @@ namespace MessageBoard.Tools
 {
     public class PicTool
     {
+        /// <summary>
+        /// 檢查上傳檔案
+        /// </summary>
+        /// <param name="httpPostedFile">postFile</param>
+        /// <param name="allowRegexStr">允許的副檔名</param>
+        /// <param name="allowMaxSize">(選填)允許的檔案大小(預設：1MB)</param>
+        /// <returns></returns>
         public static Tuple<bool, List<string>> CheckUplaodFiles(HttpPostedFileBase httpPostedFile, string allowRegexStr, int allowMaxSize = 1)
         {
             bool result = true;
@@ -35,25 +44,28 @@ namespace MessageBoard.Tools
         }
 
         /// <summary>
-        /// 檢查檔案大小
+        /// 儲存訊息圖片
         /// </summary>
-        /// <param name="httpPostedFile">傳遞的檔案</param>
-        /// <param name="allowMaxSize">(選填)允許的檔案大小(預設：1MB)</param>
-        /// <returns>回傳結果</returns>
-        private static bool isFileSizeAllow(HttpPostedFileBase httpPostedFile, int allowMaxSize = 1)
+        /// <param name="httpPostedFile">Post file</param>
+        /// <param name="userID">使用者 ID</param>
+        /// <param name="messageID">訊息 ID</param>
+        public static void SaveMessagePic(HttpPostedFileBase httpPostedFile, int userID, int messageID)
         {
-            return (httpPostedFile.ContentLength < allowMaxSize * 1024 * 1024);
-        }
+            string fileName = Guid.NewGuid().ToString();
+            string originPicViturePath = $"messagePics/origin/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
+            string resizePicViturePath = $"messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
+            DoSaveImage(httpPostedFile, resizePicViturePath, originPicViturePath, 60);
 
-        /// <summary>
-        /// 檢查附檔名是否允許
-        /// </summary>
-        /// <param name="fileName">檔案名稱</param>
-        /// <param name="allowRegexStr">待檢查的附檔名正則表達式</param>
-        /// <returns>回傳結果</returns>
-        private static bool isFileExtensionAllow(string fileName, string allowRegexStr)
-        {
-            return Regex.IsMatch(fileName, allowRegexStr);
+            IMessagePic interfaceMessagePic = new MessagePicRepository(new MessageBoardEntities());
+            MessagePic messagePic = new MessagePic()
+            {
+                CreateDate = DateTime.Now,
+                MessageID = messageID,
+                CreateUserID = userID,
+                PicURL = originPicViturePath,
+                picStatus = true
+            };
+            interfaceMessagePic.Create(messagePic);
         }
 
         /// <summary>
@@ -76,26 +88,6 @@ namespace MessageBoard.Tools
             }
         }
 
-        public static void SaveMessagePic(HttpPostedFileBase httpPostedFile, int userID, int messageID)
-        {
-            string fileName = Guid.NewGuid().ToString();
-            string originPicViturePath = $"messagePics/origin/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
-            string resizePicViturePath = $"messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
-            DoSaveImage(httpPostedFile, resizePicViturePath, originPicViturePath, 60);
-
-            MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
-            MessagePic messagePic = new MessagePic()
-            {
-                CreateDate = DateTime.Now,
-                MessageID = messageID,
-                CreateUserID = userID,
-                PicURL = originPicViturePath,
-                picStatus = true
-            };
-            messageBoardEntities.MessagePic.Add(messagePic);
-            messageBoardEntities.SaveChanges();
-        }
-
         /// <summary>
         /// 在圖片四周加入白邊
         /// </summary>
@@ -116,32 +108,6 @@ namespace MessageBoard.Tools
 
                 graphics.FillRectangle(solidBrush, 0, 0, width, height);
                 graphics.DrawImage(imgToAddFrame, (width - imgToAddFrame.Width) / 2, (height - imgToAddFrame.Height) / 2, rectangle, GraphicsUnit.Pixel);
-                newImg = bitmap;
-            }
-
-            return newImg;
-        }
-
-        /// <summary>
-        /// 取得縮尺寸的圖片
-        /// </summary>
-        /// <param name="imgToResize">待縮圖的原圖</param>
-        /// <param name="targetWidth">目標寬度</param>
-        /// <param name="targetHeight">目標高度</param>
-        /// <returns></returns>
-        private static Image GetResizeImage(Image imgToResize, int targetWidth, int targetHeight)
-        {
-            Image newImg = imgToResize;
-            if (imgToResize.Width > targetWidth || imgToResize.Height > targetHeight)
-            {
-                float percent = Math.Min(targetHeight / (float)imgToResize.Height, targetWidth / (float)imgToResize.Width);
-                int destHeight = (int)(imgToResize.Height * percent);
-                int destWidth = (int)(imgToResize.Width * percent);
-                Bitmap bitmap = new Bitmap(destWidth, destHeight);
-                Graphics graphics = Graphics.FromImage(bitmap);
-
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
                 newImg = bitmap;
             }
 
@@ -193,6 +159,54 @@ namespace MessageBoard.Tools
                 LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 取得縮尺寸的圖片
+        /// </summary>
+        /// <param name="imgToResize">待縮圖的原圖</param>
+        /// <param name="targetWidth">目標寬度</param>
+        /// <param name="targetHeight">目標高度</param>
+        /// <returns></returns>
+        private static Image GetResizeImage(Image imgToResize, int targetWidth, int targetHeight)
+        {
+            Image newImg = imgToResize;
+            if (imgToResize.Width > targetWidth || imgToResize.Height > targetHeight)
+            {
+                float percent = Math.Min(targetHeight / (float)imgToResize.Height, targetWidth / (float)imgToResize.Width);
+                int destHeight = (int)(imgToResize.Height * percent);
+                int destWidth = (int)(imgToResize.Width * percent);
+                Bitmap bitmap = new Bitmap(destWidth, destHeight);
+                Graphics graphics = Graphics.FromImage(bitmap);
+
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+                newImg = bitmap;
+            }
+
+            return newImg;
+        }
+
+        /// <summary>
+        /// 檢查附檔名是否允許
+        /// </summary>
+        /// <param name="fileName">檔案名稱</param>
+        /// <param name="allowRegexStr">待檢查的附檔名正則表達式</param>
+        /// <returns>回傳結果</returns>
+        private static bool isFileExtensionAllow(string fileName, string allowRegexStr)
+        {
+            return Regex.IsMatch(fileName, allowRegexStr);
+        }
+
+        /// <summary>
+        /// 檢查檔案大小
+        /// </summary>
+        /// <param name="httpPostedFile">傳遞的檔案</param>
+        /// <param name="allowMaxSize">(選填)允許的檔案大小(預設：1MB)</param>
+        /// <returns>回傳結果</returns>
+        private static bool isFileSizeAllow(HttpPostedFileBase httpPostedFile, int allowMaxSize = 1)
+        {
+            return (httpPostedFile.ContentLength < allowMaxSize * 1024 * 1024);
         }
     }
 }
