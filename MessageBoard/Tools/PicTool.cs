@@ -63,75 +63,37 @@ namespace MessageBoard.Tools
         /// <param name="userID">儲存檔案名稱</param>
         public static void SaveUserPic(HttpPostedFileBase httpPostedFile, int userID)
         {
-            try
-            {
-                string realFileViturePath = $"UserIcon/UserIcon_{userID}{Path.GetExtension(httpPostedFile.FileName)}";
-                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/UserIcon/2_UserIcon{userID}{Path.GetExtension(httpPostedFile.FileName)}");
-                string realFilePath = HttpContext.Current.Server.MapPath($@"~/{realFileViturePath}");
-                if (File.Exists(tmpFilePath))
-                {
-                    File.Delete(HttpContext.Current.Server.MapPath(tmpFilePath));
-                }
+            string realFileViturePath = $"UserIcon/UserIcon_{userID}{Path.GetExtension(httpPostedFile.FileName)}";
+            string tmpFilePath = $"UserIcon/2_UserIcon{userID}{Path.GetExtension(httpPostedFile.FileName)}";
+            DoSaveImage(httpPostedFile, realFileViturePath, tmpFilePath, 100, true);
 
-                httpPostedFile.SaveAs(tmpFilePath);
-                using (Image originImg = Image.FromFile(tmpFilePath))
-                {
-                    using (var formattedImg = AddFrame(GetResizeImage(originImg, 100, 100), 100, 100))
-                    {
-                        formattedImg.Save(realFilePath);
-                    }
-                }
-
-                if (File.Exists(tmpFilePath))
-                {
-                    File.Delete(tmpFilePath);
-                    UserTool userTool = new UserTool();
-                    userTool.SaveUserIconPath(userID, realFileViturePath);
-                }
-                GC.Collect();
-            }
-            catch (Exception err)
+            tmpFilePath = HttpContext.Current.Server.MapPath($"~/{tmpFilePath}");
+            if (File.Exists(tmpFilePath))
             {
-                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
-                throw;
+                File.Delete(tmpFilePath);
+                UserTool userTool = new UserTool();
+                userTool.SaveUserIconPath(userID, realFileViturePath);
             }
         }
 
         public static void SaveMessagePic(HttpPostedFileBase httpPostedFile, int userID, int messageID)
         {
-            try
-            {
-                string fileName = Guid.NewGuid().ToString();
-                string realFileViturePath = $"messagePics/origin/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
-                string tmpFilePath = HttpContext.Current.Server.MapPath($@"~/messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}");
-                string realFilePath = HttpContext.Current.Server.MapPath($@"~/{realFileViturePath}");
+            string fileName = Guid.NewGuid().ToString();
+            string originPicViturePath = $"messagePics/origin/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
+            string resizePicViturePath = $"messagePics/{fileName}{Path.GetExtension(httpPostedFile.FileName)}";
+            DoSaveImage(httpPostedFile, resizePicViturePath, originPicViturePath, 60);
 
-                httpPostedFile.SaveAs(realFilePath);
-                using (Image originImg = Image.FromFile(realFilePath))
-                {
-                    using (var formattedImg = GetResizeImage(originImg, 60, 60))
-                    {
-                        formattedImg.Save(tmpFilePath);
-                    }
-                }
-
-                MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
-                MessagePic messagePic = new MessagePic()
-                {
-                    CreateDate = DateTime.Now,
-                    MessageID = messageID,
-                    CreateUserID = userID,
-                    PicURL = realFileViturePath,
-                    picStatus = true
-                };
-                messageBoardEntities.MessagePic.Add(messagePic);
-                messageBoardEntities.SaveChanges();
-                GC.Collect();
-            }
-            catch (Exception err)
+            MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
+            MessagePic messagePic = new MessagePic()
             {
-                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
-            }
+                CreateDate = DateTime.Now,
+                MessageID = messageID,
+                CreateUserID = userID,
+                PicURL = originPicViturePath,
+                picStatus = true
+            };
+            messageBoardEntities.MessagePic.Add(messagePic);
+            messageBoardEntities.SaveChanges();
         }
 
         /// <summary>
@@ -184,6 +146,53 @@ namespace MessageBoard.Tools
             }
 
             return newImg;
+        }
+
+        /// <summary>
+        /// 儲存圖片
+        /// </summary>
+        /// <param name="httpPostedFile">post file</param>
+        /// <param name="formatedFilePath">被格式化的圖片路徑</param>
+        /// <param name="originFilePath">原始圖片路徑</param>
+        /// <param name="imgSize">格式化成方形的大小</param>
+        /// <param name="isAddFrame">是否需要加白邊</param>
+        private static void DoSaveImage(HttpPostedFileBase httpPostedFile, string formatedFilePath, string originFilePath, int imgSize, bool isAddFrame = false)
+        {
+            try
+            {
+                formatedFilePath = HttpContext.Current.Server.MapPath($@"~/{formatedFilePath}");
+                originFilePath = HttpContext.Current.Server.MapPath($@"~/{originFilePath}");
+                if (File.Exists(originFilePath))
+                {
+                    File.Delete(HttpContext.Current.Server.MapPath(originFilePath));
+                }
+
+                httpPostedFile.SaveAs(originFilePath);
+                using (Image originImg = Image.FromFile(originFilePath))
+                {
+                    using (var resizedImg = GetResizeImage(originImg, imgSize, imgSize))
+                    {
+                        if (isAddFrame)
+                        {
+                            using (var framedImg = AddFrame(resizedImg, imgSize, imgSize))
+                            {
+                                framedImg.Save(formatedFilePath);
+                            }
+                        }
+                        else
+                        {
+                            resizedImg.Save(formatedFilePath);
+                        }
+                    }
+                }
+
+                GC.Collect();
+            }
+            catch (Exception err)
+            {
+                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n{err.StackTrace}\r\n");
+                throw;
+            }
         }
     }
 }
