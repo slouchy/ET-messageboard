@@ -16,13 +16,14 @@ namespace MessageBoard.Tools
 {
     public class UserTool
     {
-        MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
-
-        private IUserList userList;
-        public UserTool() { }
+        private IUserList _userList;
+        public UserTool()
+        {
+            _userList = new UserListRepository(new MessageBoardEntities());
+        }
         public UserTool(MessageBoardEntities entities)
         {
-            userList = new UserListRepository(entities);
+            _userList = new UserListRepository(entities);
         }
 
         /// <summary>
@@ -46,27 +47,24 @@ namespace MessageBoard.Tools
         /// <summary>
         /// 檢驗使用者是否登入成功
         /// </summary>
-        /// <param name="userAccount">使用者姓名</param>
+        /// <param name="userName">使用者姓名</param>
         /// <param name="userPw">使用者密碼</param>
         /// <returns>回傳檢驗結果</returns>
-        public bool isUserEqulsDB(string userAccount, string userPw)
+        public bool isUserEqulsDB(string userName, string userPw)
         {
-            if (isUserNameCorrect(userAccount) && isUserPWCorrect(userPw))
+            if (isUserNameCorrect(userName) && isUserPWCorrect(userPw))
             {
                 string saltedPw = GetSaltPW(userPw);
-                var userData = messageBoardEntities.UserList
-                    .Where(r => r.UserName.Equals(userAccount, StringComparison.CurrentCultureIgnoreCase));
-                if (userData.Any())
+                var userData = _userList.GetUserInfo(userName);
+                if (userData != null)
                 {
-                    var loginUser = userData
-                        .Where(r => r.UserPW.Equals(saltedPw));
-                    if (loginUser.Any())
+                    if (userData.UserPW.Equals(saltedPw))
                     {
-                        DoUserLog(userData.FirstOrDefault().UserID, "登入成功");
+                        DoUserLog(userData.UserID, "登入成功");
                         return true;
                     }
 
-                    DoUserLog(userData.FirstOrDefault().UserID, "登入失敗");
+                    DoUserLog(userData.UserID, "登入失敗");
                 }
             }
 
@@ -107,8 +105,9 @@ namespace MessageBoard.Tools
                         UserAccess = 1,
                         UserStatus = true
                     };
-                    messageBoardEntities.UserList.Add(userList);
-                    messageBoardEntities.SaveChanges();
+                    _userList.Create(userList);
+                    //messageBoardEntities.UserList.Add(userList);
+                    //messageBoardEntities.SaveChanges();
                     DoUserLog(userList.UserID, "註冊成功");
                     msg = "註冊成功，即將跳轉至登入頁";
                     result = true;
@@ -122,13 +121,18 @@ namespace MessageBoard.Tools
             return Tuple.Create(result, errorList, msg, userList);
         }
 
+        /// <summary>
+        /// 忘記密碼檢測使用者名稱是否和信箱匹配
+        /// </summary>
+        /// <param name="userName">使用者名稱</param>
+        /// <param name="userEmail">使用者信箱</param>
+        /// <returns></returns>
         public bool isUserEmailExist(string userName, string userEmail)
         {
-            var userInfo = messageBoardEntities.UserList
-                .Where(r => r.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase) &&
-                r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase));
-
-            return userInfo.Any();
+            var userInfo = _userList.GetUserInfo(userName);
+            return userInfo != null ?
+                userInfo.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase) :
+                false;
         }
 
         public Tuple<bool, IQueryable<UserList>> UserPWCorrect(HttpRequestBase httpRequest, string pw)
@@ -151,21 +155,17 @@ namespace MessageBoard.Tools
         /// <returns>回傳檢查結果</returns>
         public bool isNotExistEmail(string email)
         {
-            return !messageBoardEntities.UserList
-                .Where(r => r.UserEmail.Equals(email, StringComparison.CurrentCultureIgnoreCase))
-                .Any();
+            return !_userList.isEmailExist(email);
         }
 
         /// <summary>
         /// 檢查使用者是否不存在
         /// </summary>
-        /// <param name="userAccount">使用者名稱</param>
+        /// <param name="userName">使用者名稱</param>
         /// <returns>回傳檢查結果</returns>
-        public bool isNotExistUserName(string userAccount)
+        public bool isNotExistUserName(string userName)
         {
-            return !messageBoardEntities.UserList
-                .Where(r => r.UserName.Equals(userAccount, StringComparison.CurrentCultureIgnoreCase))
-                .Any();
+            return !_userList.isUserNameExist(userName);
         }
 
         /// <summary>
@@ -180,22 +180,19 @@ namespace MessageBoard.Tools
             bool result = false;
             if (isUserPWCorrect(newPW))
             {
-                var userInfo = messageBoardEntities.UserList
-                    .Where(r => r.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase) &&
-                    r.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase));
-                if (userInfo.Any())
+                var userInfo = _userList.GetUserInfo(userName);
+                if (userInfo != null && userInfo.UserEmail.Equals(userEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     try
                     {
-                        var userUpdate = messageBoardEntities.UserList.Find(userInfo.FirstOrDefault().UserID);
-                        userUpdate.UserPW = GetSaltPW(newPW);
-                        messageBoardEntities.SaveChanges();
+                        userInfo.UserPW = GetSaltPW(newPW);
+                        _userList.Update(userInfo);
                         result = true;
-                        DoUserLog(userInfo.FirstOrDefault().UserID, "改密碼成功");
+                        DoUserLog(userInfo.UserID, "改密碼成功");
                     }
                     catch (Exception err)
                     {
-                        DoUserLog(userInfo.FirstOrDefault().UserID, "改密碼失敗");
+                        DoUserLog(userInfo.UserID, "改密碼失敗");
                         LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
                         throw;
                     }
@@ -319,7 +316,7 @@ namespace MessageBoard.Tools
                 return new UserList();
             }
 
-            return userList.GetUserInfo(cookieUserName);
+            return _userList.GetUserInfo(cookieUserName);
         }
 
         /// <summary>
@@ -329,6 +326,7 @@ namespace MessageBoard.Tools
         /// <param name="userOperator">訊息</param>
         private void DoUserLog(int userID, string userOperator)
         {
+            MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
             try
             {
                 UserLog userLog = new UserLog

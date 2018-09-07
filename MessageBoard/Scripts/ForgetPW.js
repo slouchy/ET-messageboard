@@ -82,6 +82,8 @@ let vueApp = new Vue({
             if (this.isShowRestPW) {
                 this.SetFocus("#userPw1");
             } else {
+                this.userEmail = "";
+                this.userName = "";
                 this.SetFocus("#userAccount");
             }
         },

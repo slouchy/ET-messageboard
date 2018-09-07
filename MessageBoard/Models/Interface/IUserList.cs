@@ -16,6 +16,9 @@ namespace MessageBoard.Models.Interface
 
         UserList GetUserInfo(string userName);
 
+        bool isEmailExist(string email);
+        bool isUserNameExist(string userName);
+
         IQueryable<UserList> GetUserLists();
     }
 }
