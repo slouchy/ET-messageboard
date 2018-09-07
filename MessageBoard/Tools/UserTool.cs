@@ -106,8 +106,6 @@ namespace MessageBoard.Tools
                         UserStatus = true
                     };
                     _userList.Create(userList);
-                    //messageBoardEntities.UserList.Add(userList);
-                    //messageBoardEntities.SaveChanges();
                     DoUserLog(userList.UserID, "註冊成功");
                     msg = "註冊成功，即將跳轉至登入頁";
                     result = true;
@@ -201,6 +199,17 @@ namespace MessageBoard.Tools
 
             return result;
         }
+        /// <summary>
+        /// 儲存使用者頭像
+        /// </summary>
+        /// <param name="userID">使用者 ID</param>
+        /// <param name="iconPath">頭像路徑</param>
+        public void SaveUserIconPath(int userID, string iconPath)
+        {
+            var userInfo = _userList.GetUserInfo(userID);
+            userInfo.UserIcon = iconPath;
+            _userList.Update(userInfo);
+        }
 
         /// <summary>
         /// 取得註冊時檢查欄位的正確性
@@ -265,7 +274,7 @@ namespace MessageBoard.Tools
         private bool isUserPWCorrect(string userPw)
         {
             Regex regPw = new Regex(@"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}");
-            return regPw.IsMatch(userPw);
+            return regPw.IsMatch(userPw) && userPw.Length >= 0 && userPw.Length <=12;
         }
 
         /// <summary>

@@ -85,10 +85,8 @@ namespace MessageBoard.Tools
                 if (File.Exists(tmpFilePath))
                 {
                     File.Delete(tmpFilePath);
-                    MessageBoardEntities messageBoardEntities = new MessageBoardEntities();
-                    var user = messageBoardEntities.UserList.Find(userID);
-                    user.UserIcon = realFileViturePath;
-                    messageBoardEntities.SaveChanges();
+                    UserTool userTool = new UserTool();
+                    userTool.SaveUserIconPath(userID, realFileViturePath);
                 }
                 GC.Collect();
             }
