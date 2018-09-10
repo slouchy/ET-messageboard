@@ -14,16 +14,11 @@ namespace MessageBoard.Tests
     {
         private MessageBoardEntities _mockDbContext = Substitute.For<MessageBoardEntities>();
 
-        [TestInitialize]
-        public void InitTest()
-        {
-            var mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist());
-            _mockDbContext.UserList.Returns(mockDbSet);
-        }
-
         [TestMethod]
         public void GetUserLists_AllowedUsersCount()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             var expectedCount = 2;
@@ -34,6 +29,8 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void GetUserInfo_ByUserNameWithUserAllowed()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             string userName = "Test1";
@@ -44,6 +41,8 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void GetUserInfo_ByUserNameWithUserNotAllowed()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             string userName = "Test3";
@@ -54,6 +53,8 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void isEmailExist_EmailExistInDB()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             string email = "CC1@com.tw";
@@ -64,6 +65,8 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void isEmailExist_EmailNotInDB()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             string email = "CC0@com.tw";
@@ -74,6 +77,8 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void isUserNameExist_UserNameExistInDB()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
 
             string[] userNames = new string[5] { "Test1", "Test2", "test1", "Test3", "test3" };
@@ -87,12 +92,52 @@ namespace MessageBoard.Tests
         [TestMethod]
         public void isUserNameExist_UserNameNotInDB()
         {
+            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(GetDemoUserlist().AsQueryable());
+            _mockDbContext.UserList.Returns(_mockDbSet);
             var mockDbUserList = new UserListRepository(_mockDbContext);
+
             var assignResult = mockDbUserList.isUserNameExist("Test0");
             Assert.IsFalse(assignResult);
         }
 
-        private IQueryable<UserList> GetDemoUserlist()
+        [TestMethod]
+        public void Create_InsertNewUserSuccess()
+        {
+            // 建立待新增的資料
+            var userInfo = new UserList()
+            {
+                CreateDate = DateTime.Now,
+                CreateIP = "127.0.0.1",
+                UserEmail = "email@com.tw",
+                UserName = "unitTest",
+                UserPW = "pw",
+                UserAccess = 1,
+                UserStatus = true
+            };
+
+            // 建立待使用的資料
+            var originDBUserList = GetDemoUserlist();
+
+            // 建立 DB mock
+            var mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(originDBUserList.AsQueryable());
+            _mockDbContext.UserList.Returns(mockDbSet);
+
+            // 建立 Add method
+            mockDbSet.Add(Arg.Do<UserList>(user =>
+            {
+                originDBUserList.Add(userInfo);
+            }));
+
+            // 建立呼叫的 Class
+            var mockDbUserList = new UserListRepository(_mockDbContext);
+
+            mockDbUserList.Create(userInfo);
+            var assignResult = mockDbUserList.GetUserLists();
+            int exceptedCount = 3;
+            Assert.AreEqual(exceptedCount, assignResult.Count());
+        }
+
+        private List<UserList> GetDemoUserlist()
         {
             return
                 new List<UserList>()
@@ -100,9 +145,7 @@ namespace MessageBoard.Tests
                     new UserList(){ UserID=1, UserName="Test1", UserStatus=true, UserEmail="CC1@com.tw" },
                     new UserList(){ UserID=2, UserName="Test2", UserStatus=true, UserEmail="CC2@com.tw" },
                     new UserList(){ UserID=3, UserName="Test3", UserStatus=false, UserEmail="CC3@com.tw" },
-                }.AsQueryable();
+                };
         }
     }
-
-
 }

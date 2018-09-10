@@ -76,11 +76,6 @@ namespace MessageBoard.Models.Repository
                     .Any();
         }
 
-        public void SaveChanges()
-        {
-            db.SaveChanges();
-        }
-
         public void Update(UserList userInfo)
         {
             if (userInfo == null)
@@ -97,6 +92,7 @@ namespace MessageBoard.Models.Repository
             dbUserData = userInfo;
             SaveChanges();
         }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -107,6 +103,11 @@ namespace MessageBoard.Models.Repository
                     this.db = null;
                 }
             }
+        }
+
+        private void SaveChanges()
+        {
+            db.SaveChanges();
         }
     }
 }
