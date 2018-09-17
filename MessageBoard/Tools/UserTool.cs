@@ -381,8 +381,22 @@ namespace MessageBoard.Tools
     {
         public string GetSaltPW(string originPW)
         {
-            return "Test1";
-            throw new NotImplementedException();
+            // salt list
+            char[] salts = new char[6] { 'A', 'B', 'C', 'D', '1', '2' };
+            string saltPw = string.Empty;
+            // Add salts
+            for (int i = 0; i < originPW.Length; i++)
+            {
+                saltPw += originPW[i];
+                if (i % 2 == 0)
+                {
+                    saltPw += salts[i / 2];
+                }
+            }
+
+            MD5 md5 = MD5.Create();
+            byte[] orignPWByte = Encoding.Default.GetBytes(saltPw);
+            return Convert.ToBase64String(md5.ComputeHash(md5.ComputeHash(orignPWByte)));
         }
     }
 }
