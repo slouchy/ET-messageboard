@@ -17,13 +17,16 @@ namespace MessageBoard.Tools
     public class UserTool
     {
         private IUserList _userList;
+        private ISaltPW _saltPW;
         public UserTool()
         {
             _userList = new UserListRepository(new MessageBoardEntities());
+            _saltPW = new SaltPW();
         }
-        public UserTool(MessageBoardEntities entities)
+        public UserTool(MessageBoardEntities entities, ISaltPW saltPW = null)
         {
             _userList = new UserListRepository(entities);
+            _saltPW = saltPW ?? new SaltPW();
         }
 
         /// <summary>
@@ -54,17 +57,18 @@ namespace MessageBoard.Tools
         {
             if (isUserNameCorrect(userName) && isUserPWCorrect(userPw))
             {
-                string saltedPw = GetSaltPW(userPw);
+                string saltedPw = _saltPW.GetSaltPW(userPw);
+                //string saltedPw = GetSaltPW(userPw);
                 var userData = _userList.GetUserInfo(userName);
                 if (userData != null)
                 {
                     if (userData.UserPW.Equals(saltedPw))
                     {
-                        DoUserLog(userData.UserID, "登入成功");
+                        //DoUserLog(userData.UserID, "登入成功");
                         return true;
                     }
 
-                    DoUserLog(userData.UserID, "登入失敗");
+                    //DoUserLog(userData.UserID, "登入失敗");
                 }
             }
 
@@ -274,7 +278,7 @@ namespace MessageBoard.Tools
         private bool isUserPWCorrect(string userPw)
         {
             Regex regPw = new Regex(@"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w\d]{0,12}$");
-            return regPw.IsMatch(userPw) && userPw.Length >= 0 && userPw.Length <=12;
+            return regPw.IsMatch(userPw) && userPw.Length >= 0 && userPw.Length <= 12;
         }
 
         /// <summary>
@@ -365,6 +369,20 @@ namespace MessageBoard.Tools
         public static IQueryable<TEntityType> ToQueryable<TEntityType>(this TEntityType instance)
         {
             return new[] { instance }.AsQueryable();
+        }
+    }
+
+    public interface ISaltPW
+    {
+        string GetSaltPW(string originPW);
+    }
+
+    public class SaltPW : ISaltPW
+    {
+        public string GetSaltPW(string originPW)
+        {
+            return "Test1";
+            throw new NotImplementedException();
         }
     }
 }

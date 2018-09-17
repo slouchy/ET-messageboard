@@ -81,6 +81,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test_DBMessagePic.cs" />
     <Compile Include="Test_DBUserList.cs" />
+    <Compile Include="Test_UserTool.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
