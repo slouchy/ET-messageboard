@@ -203,6 +203,7 @@ namespace MessageBoard.Tools
 
             return result;
         }
+
         /// <summary>
         /// 儲存使用者頭像
         /// </summary>
@@ -391,7 +392,7 @@ namespace MessageBoard.Tools
         /// <returns>加密後的密碼</returns>
         public string GetSaltPW(string originPW)
         {
-            return "Test1";
+            return originPW;
         }
     }
 }
