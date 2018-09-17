@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Web.Security;
 using MessageBoard.Models.Interface;
 using MessageBoard.Models.Repository;
+using System.Threading.Tasks;
 
 namespace MessageBoard.Tools
 {
@@ -58,17 +59,16 @@ namespace MessageBoard.Tools
             if (isUserNameCorrect(userName) && isUserPWCorrect(userPw))
             {
                 string saltedPw = _saltPW.GetSaltPW(userPw);
-                //string saltedPw = GetSaltPW(userPw);
                 var userData = _userList.GetUserInfo(userName);
                 if (userData != null)
                 {
                     if (userData.UserPW.Equals(saltedPw))
                     {
-                        //DoUserLog(userData.UserID, "登入成功");
+                        DoUserLog(userData.UserID, "登入成功");
                         return true;
                     }
 
-                    //DoUserLog(userData.UserID, "登入失敗");
+                    DoUserLog(userData.UserID, "登入失敗");
                 }
             }
 
@@ -105,7 +105,7 @@ namespace MessageBoard.Tools
                         CreateIP = PBTool.GetIP(),
                         UserEmail = email,
                         UserName = userAccount,
-                        UserPW = GetSaltPW(userPw1),
+                        UserPW = _saltPW.GetSaltPW(userPw1),
                         UserAccess = 1,
                         UserStatus = true
                     };
@@ -146,7 +146,7 @@ namespace MessageBoard.Tools
                 userData = GetLoginedUser(userCookie.userName);
             }
 
-            bool result = userData != null && userData.UserPW.Equals(GetSaltPW(pw));
+            bool result = userData != null && userData.UserPW.Equals(_saltPW.GetSaltPW(pw));
             return Tuple.Create(result, userData.ToQueryable());
         }
 
@@ -187,7 +187,7 @@ namespace MessageBoard.Tools
                 {
                     try
                     {
-                        userInfo.UserPW = GetSaltPW(newPW);
+                        userInfo.UserPW = _saltPW.GetSaltPW(newPW);
                         _userList.Update(userInfo);
                         result = true;
                         DoUserLog(userInfo.UserID, "改密碼成功");
@@ -293,31 +293,6 @@ namespace MessageBoard.Tools
         }
 
         /// <summary>
-        /// 取得加密密碼
-        /// </summary>
-        /// <param name="orignPW">原始密碼</param>
-        /// <returns>加密後的密碼</returns>
-        private string GetSaltPW(string orignPW)
-        {
-            // salt list
-            char[] salts = new char[6] { 'A', 'B', 'C', 'D', '1', '2' };
-            string saltPw = string.Empty;
-            // Add salts
-            for (int i = 0; i < orignPW.Length; i++)
-            {
-                saltPw += orignPW[i];
-                if (i % 2 == 0)
-                {
-                    saltPw += salts[i / 2];
-                }
-            }
-
-            MD5 md5 = MD5.Create();
-            byte[] orignPWByte = Encoding.Default.GetBytes(saltPw);
-            return Convert.ToBase64String(md5.ComputeHash(md5.ComputeHash(orignPWByte)));
-        }
-
-        /// <summary>
         /// 取得登入的使用者資訊
         /// </summary>
         /// <param name="cookieUserName">使用者名稱</param>
@@ -358,8 +333,10 @@ namespace MessageBoard.Tools
             }
             catch (Exception err)
             {
-                LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
-                throw;
+                Task.Factory.StartNew(() =>
+                {
+                    LogTool.DoErrorLog($"#{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}:{err.Message}\r\n");
+                });
             }
         }
     }
@@ -379,6 +356,11 @@ namespace MessageBoard.Tools
 
     public class SaltPW : ISaltPW
     {
+        /// <summary>
+        /// 取得加密密碼
+        /// </summary>
+        /// <param name="orignPW">原始密碼</param>
+        /// <returns>加密後的密碼</returns>
         public string GetSaltPW(string originPW)
         {
             // salt list
@@ -402,6 +384,11 @@ namespace MessageBoard.Tools
 
     public class Stub_SaltPW : ISaltPW
     {
+        /// <summary>
+        /// 測試使用的取得加密密碼
+        /// </summary>
+        /// <param name="orignPW">原始密碼</param>
+        /// <returns>加密後的密碼</returns>
         public string GetSaltPW(string originPW)
         {
             return "Test1";
