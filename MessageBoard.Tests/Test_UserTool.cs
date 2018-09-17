@@ -15,22 +15,6 @@ namespace MessageBoard.Tests
         private MessageBoardEntities _mockDbContext = Substitute.For<MessageBoardEntities>();
 
         [TestMethod]
-        public void isUserEqulsDB_UseRealData_ShouldBeTrue()
-        {
-            UserTool userTool = new UserTool();
-            string userName = "Test";
-            string userPw = "Test1";
-            bool actual = false;
-
-            // actual
-            actual = userTool.isUserEqulsDB(userName, userPw);
-
-            Assert.IsTrue(actual);
-            Assert.Inconclusive("建立依賴注入後需要移除的測試方法");
-
-        }
-
-        [TestMethod]
         public void isUserEqulsDB_UseFakeData_ShouldBeTrue()
         {
             List<UserList> userLists = new List<UserList>()
@@ -39,9 +23,10 @@ namespace MessageBoard.Tests
                     new UserList(){ UserID=2, UserName="Test2", UserStatus=true, UserEmail="CC2@com.tw", UserPW="Test2" },
                     new UserList(){ UserID=3, UserName="Test3", UserStatus=false, UserEmail="CC3@com.tw", UserPW="Test3" },
                 };
-            IDbSet<UserList> _mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(userLists.AsQueryable());
-            _mockDbContext.UserList.Returns(_mockDbSet);
-            UserTool userTool = new UserTool(_mockDbContext);
+            IDbSet<UserList> mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(userLists.AsQueryable());
+            ISaltPW saltPW = new Stub_SaltPW();
+            _mockDbContext.UserList.Returns(mockDbSet);
+            UserTool userTool = new UserTool(_mockDbContext, saltPW);
             string userName = "Test1";
             string userPw = "Test1";
             bool actual = false;
@@ -50,8 +35,29 @@ namespace MessageBoard.Tests
             actual = userTool.isUserEqulsDB(userName, userPw);
 
             Assert.IsTrue(actual);
-            Assert.Inconclusive("驗證這個測試方法的正確性。");
+        }
 
+        [TestMethod]
+        public void isUserEqulsDB_UseEncryptPw_ShouldBeTrue()
+        {
+            List<UserList> userLists = new List<UserList>()
+                {
+                    new UserList(){ UserID=1, UserName="Test1", UserStatus=true, UserEmail="CC1@com.tw", UserPW="BVI0J7BZ039zjrgJZRiX6Q==" },
+                    new UserList(){ UserID=2, UserName="Test2", UserStatus=true, UserEmail="CC2@com.tw", UserPW="Test2" },
+                    new UserList(){ UserID=3, UserName="Test3", UserStatus=false, UserEmail="CC3@com.tw", UserPW="Test3" },
+                };
+            IDbSet<UserList> mockDbSet = Substitute.For<IDbSet<UserList>, DbSet<UserList>>().Initialize(userLists.AsQueryable());
+            ISaltPW saltPW = new SaltPW();
+            _mockDbContext.UserList.Returns(mockDbSet);
+            UserTool userTool = new UserTool(_mockDbContext, saltPW);
+            string userName = "Test1";
+            string userPw = "Test1";
+            bool actual = false;
+
+            // actual
+            actual = userTool.isUserEqulsDB(userName, userPw);
+
+            Assert.IsTrue(actual);
         }
     }
 }

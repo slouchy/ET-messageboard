@@ -399,4 +399,12 @@ namespace MessageBoard.Tools
             return Convert.ToBase64String(md5.ComputeHash(md5.ComputeHash(orignPWByte)));
         }
     }
+
+    public class Stub_SaltPW : ISaltPW
+    {
+        public string GetSaltPW(string originPW)
+        {
+            return "Test1";
+        }
+    }
 }
